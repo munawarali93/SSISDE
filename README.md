@@ -1,7 +1,7 @@
 # Stochastic SINDy (SSISDE)
 
-Private development repository for the Black–Scholes experiment supplied as
-`Stochastic_SINDy_Black_Scholes.ipynb`.
+Private development repository for the Black-Scholes, constant, quadratic, and OU
+SSISDE experiments.
 
 ## Layout
 
@@ -13,6 +13,72 @@ original/           Untouched input notebook, including its original outputs
 scripts/            Source-preservation check and full notebook runner
 requirements.txt    Scientific dependencies
 requirements-dev.txt Scientific dependencies plus Jupyter execution tools
+```
+
+## Experiments
+
+- [Black-Scholes](experiments/Stochastic_SINDy_Black_Scholes.ipynb)
+- [Time-shifted Brownian motion](experiments/constant/Stochastic_SINDy_constant.ipynb)
+- [Quadratic coefficients](experiments/quadratic/Stochastic_SINDy_Quadratic.ipynb)
+- [Ornstein-Uhlenbeck](experiments/ou/Stochastic_SINDy_OU.ipynb)
+
+The constant and quadratic notebooks compare Method 1, Method 2, and ODE2 against
+the actual drift. Simulations retain the supplied seeds, coefficients, and sample
+sizes. ODE2 uses initial slope zero for the constant case and `0.7 + 0.6*S0` for
+the quadratic case. Black-Scholes keeps its default slope `r`.
+
+In the constant notebook, change `thresholds` and `nus` to adjust the SR3 search. Selection
+uses the last 20% of the trajectory, with a three-sample gap after the training
+data. Actual diffusion values are used only to report error. The search uses
+`max_iter=10000` and `tol=1e-8`, and rejects nonconverged fits or nonpositive
+variance. The original settings are retained as a comparison. The polynomial
+library for diffusion variance has degree 4. A small pathwise error does not
+establish that the recovered polynomial is accurate outside the observed range.
+
+Terminology follows [Noise estimation of SDE from a single data trajectory](https://arxiv.org/abs/2509.25484v2).
+The quadratic notebook uses the supplied `Stochastic_SINDy_Quadratic.ipynb`:
+`mu(X) = 0.7*X + 0.3*X**2`, `sigma(X) = 0.5*X + 0.1*X**2`, and seed 2.
+Its diffusion fit keeps `threshold=0.04`, `nu=0.05`, `max_iter=500`, `tol=1e-14`,
+and a degree-4 library without a constant term. Noise recovery uses Method 2,
+as in that source notebook. These settings are in `models/diffusion_quadratic.py`.
+
+Each new notebook saves figures in its own folder and numerical results in
+`outputs/<case>/`. The completed notebook also retains its displayed results.
+To run either experiment from the terminal:
+
+```bash
+.venv/bin/python scripts/run_experiment.py experiments/constant/Stochastic_SINDy_constant.ipynb --in-place
+.venv/bin/python scripts/run_experiment.py experiments/quadratic/Stochastic_SINDy_Quadratic.ipynb --in-place
+```
+
+For Colab, first obtain a runtime copy of the repository using the existing
+Black-Scholes setup cell, then open the desired experiment with the same runtime.
+New local files must be pushed before that remote copy can include them.
+
+The constant experiment completed with `N=100000`. Its diffusion RMSE is
+`0.0001964`, and ODE2 drift RMSE is about `3e-10`. Results for the quadratic
+experiment are displayed in its notebook and saved to `outputs/quadratic/`.
+
+The OU experiment uses `kappa=0.5`, `theta=0`, `sigma=0.3`, `X0=1`, `T=1`,
+`N=100000`, and seed 3. It compares Methods 1 and 2 with ODE2 using the known
+initial slope. Every method uses the known initial drift. ODE2 is conditional
+on the supplied slope. Both the general
+degree-5 SSISDE library and a separate linear-drift, constant-diffusion library
+are reported. A small increment error alone does not establish drift recovery.
+
+For OU, the Brownian and state samples share the same time indices, quadratic
+variation includes every preceding increment, and diffusion derivatives are
+evaluated from the fitted polynomial. Other experiments retain their existing
+computations. OU figures are in `experiments/ou/`, with numerical results in
+`outputs/ou/results.json`.
+
+On the OU path, estimated diffusion is `0.299025` versus `0.3`. ODE2 with the
+known slope recovers drift `-0.5*X`, with zero drift RMSE and Brownian path RMSE
+`0.002057`. This result uses the actual initial slope and does not independently
+identify `kappa`.
+
+```bash
+.venv/bin/python scripts/run_experiment.py experiments/ou/Stochastic_SINDy_OU.ipynb --in-place
 ```
 
 ## Run locally in VS Code
