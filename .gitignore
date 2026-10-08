@@ -416,3 +416,12 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Stochastic SINDy: local environments and generated experiment outputs
+.venv/
+.ipynb_checkpoints/
+.DS_Store
+outputs/
+experiments/*.png
+*.executed.ipynb
+.env

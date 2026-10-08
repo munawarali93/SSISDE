@@ -1,0 +1,11 @@
+# Versions explicitly pinned in the original Colab notebook.
+pysindy==1.7.5
+numpy==1.26.4
+scipy==1.13.1
+scikit-learn==1.5.2
+# Additional imports used by the original notebook.
+iisignature==0.24
+matplotlib==3.9.4
+tqdm==4.67.1
+# PySINDy 1.7.5 imports pkg_resources.
+setuptools<81
