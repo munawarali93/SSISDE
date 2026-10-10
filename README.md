@@ -8,7 +8,7 @@ and double-well SSISDE experiments.
 ```text
 data_generation/    Original parameters, process simulation, and coarse graining (.py)
 models/             Original variation, diffusion, signature, drift, noise, and SINDy code (.py)
-experiments/        Notebook that runs the scripts and displays the original plots
+experiments/        Separate folders with notebooks and plots for each process
 original/           Untouched input notebook, including its original outputs
 scripts/            Source-preservation check and full notebook runner
 requirements.txt    Scientific dependencies
@@ -17,7 +17,7 @@ requirements-dev.txt Scientific dependencies plus Jupyter execution tools
 
 ## Experiments
 
-- [Black-Scholes](experiments/Stochastic_SINDy_Black_Scholes.ipynb)
+- [Black-Scholes](experiments/black_scholes/Stochastic_SINDy_Black_Scholes.ipynb)
 - [Time-shifted Brownian motion](experiments/constant/Stochastic_SINDy_constant.ipynb)
 - [Quadratic coefficients](experiments/quadratic/Stochastic_SINDy_Quadratic.ipynb)
 - [Ornstein-Uhlenbeck](experiments/ou/Stochastic_SINDy_OU.ipynb)
@@ -100,7 +100,7 @@ source .venv/bin/activate
 python -m pip install -r requirements-dev.txt
 ```
 
-Open `experiments/Stochastic_SINDy_Black_Scholes.ipynb`, select `.venv/bin/python`
+Open `experiments/black_scholes/Stochastic_SINDy_Black_Scholes.ipynb`, select `.venv/bin/python`
 as its kernel, and choose **Run All**. The first cells locate the checkout and
 install scientific dependencies into that kernel. If dependencies were already
 imported before their versions changed, restart the kernel and run all cells.
@@ -151,9 +151,10 @@ An untouched copy of the supplied notebook is retained in `original/`.
 .venv/bin/python scripts/run_experiment.py
 ```
 
-The runner writes an executed notebook to `outputs/`. Figures retain the original
-filenames and are saved under `experiments/`. Generated results and `.venv` are
-excluded from Git. The repository remains private during development; making it
+The runner writes the Black-Scholes execution record to `outputs/black_scholes/`.
+Its notebook and figures are under `experiments/black_scholes/`; figure filenames
+are unchanged. Completed notebook outputs are included in Git; separate generated
+figures, execution logs, and `.venv` are excluded. The repository remains private during development; making it
 public is a separate future action.
 
 ## Verified local run

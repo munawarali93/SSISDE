@@ -8,12 +8,12 @@ from nbclient import NotebookClient
 
 root = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser()
-parser.add_argument('notebook', nargs='?', default='experiments/Stochastic_SINDy_Black_Scholes.ipynb')
+parser.add_argument('notebook', nargs='?', default='experiments/black_scholes/Stochastic_SINDy_Black_Scholes.ipynb')
 parser.add_argument('--in-place', action='store_true', help='Save completed outputs in the experiment notebook.')
 args = parser.parse_args()
 path = (root / args.notebook).resolve()
 output = root / 'outputs' / path.parent.relative_to(root / 'experiments')
-output.mkdir(exist_ok=True)
+output.mkdir(parents=True, exist_ok=True)
 os.environ.setdefault('MPLCONFIGDIR', str(output / '.matplotlib'))
 os.environ.setdefault('IPYTHONDIR', str(output / '.ipython'))
 os.environ.setdefault('JUPYTER_PLATFORM_DIRS', '1')
