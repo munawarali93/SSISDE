@@ -60,67 +60,35 @@ The constant experiment completed with `N=100000`. Its diffusion RMSE is
 `0.0001964`, and ODE2 drift RMSE is about `3e-10`. Results for the quadratic
 experiment are displayed in its notebook and saved to `outputs/quadratic/`.
 
-The OU experiment uses `kappa=0.5`, `theta=0`, `sigma=0.3`, `X0=1`, `T=1`,
-`N=100000`, and seed 3. It compares Methods 1 and 2 with ODE2 using the known
-initial slope. Every method uses the known initial drift. ODE2 is conditional
-on the supplied slope. Both the general
-degree-5 SSISDE library and a separate linear-drift, constant-diffusion library
-are reported. A small increment error alone does not establish drift recovery.
+## OU and double-well experiments
 
-For OU, the Brownian and state samples share the same time indices, quadratic
-variation includes every preceding increment, and diffusion derivatives are
-evaluated from the fitted polynomial. Other experiments retain their existing
-computations. OU figures are in `experiments/ou/`, with numerical results in
-`outputs/ou/results.json`.
+Both notebooks repeat the Black-Scholes workflow with `N=100000`, `T=1`,
+`X0=1`, and seed 3. OU uses `mu(X) = -0.5*X`, `sigma(X) = 0.3`.
+The double well uses `mu(X) = 0.5*X - X**3`, `sigma(X) = 1 + 0.25*X**2`.
 
-On the OU path, estimated diffusion is `0.299025` versus `0.3`. ODE2 with the
-known slope recovers drift `-0.5*X`, with zero drift RMSE and Brownian path RMSE
-`0.002057`. This result uses the actual initial slope and does not independently
-identify `kappa`.
+They use the same quadratic-variation calculation, finite-difference derivatives,
+signature regression, coarse graining, and drift equations as Black-Scholes.
+Method 1, Method 2, and ODE2 are compared for drift. ODE2 uses the known initial
+slope (`-0.5` for OU and `-2.5` for the double well). Method 1 supplies the noise
+for the single final SSISDE fit, with the same degree-5 libraries, seven folds,
+35 alpha values, and seven elastic-net mixing values as Black-Scholes.
+
+Only diffusion regression parameters are tuned. The existing degree-4 variance
+library and SR3 selection on the last 20% of the observed path are retained.
+The true diffusion is used only to report error. There are no increment-based
+drift fits, odd-symmetry fits, or separate OU libraries. Poor recovery results
+are retained for inspection.
 
 ```bash
 .venv/bin/python scripts/run_experiment.py experiments/ou/Stochastic_SINDy_OU.ipynb --in-place
-```
-
-## Double-well experiment
-
-The new experiment uses `mu(X) = 0.5*X - X**3` and
-`sigma(X) = 1 + 0.25*X**2`. The first differential in the supplied image is
-interpreted as `dt`. Its generator is `data_generation/double_well.py`.
-The fixed seed is 42, with `X0=1`, `T=200`, and one million samples
-(`dt=0.0002`). The longer observation period covers both wells.
-
-SR3 searches 12 parameter pairs using the last 20% of the observed trajectory.
-The selected diffusion variance is
-`1.00198797 + 0.50032259*X**2 + 0.05995041*X**4`, with diffusion RMSE `0.00170021`.
-The true coefficients and Brownian path are not used to choose the regression settings.
-
-Method 1, Method 2, and ODE2 are reused without modification. All three receive
-the initial drift, and ODE2 receives the known initial slope. Their drift
-equations do not recover this cubic drift accurately. The notebook includes
-an explicit check of the ODE2 equation using the exact coefficients.
-
-For comparison, `models/increment_drift.py` fits the drift from observed
-increments using five time-series folds. The notebook reports both an
-unrestricted polynomial fit and a fit supplying the known odd symmetry of the
-double-well drift. These are separate comparisons, not changes to the paper's
-methods. All recovered noise paths are compared with the simulated Brownian
-path, and the SSISDE stage reports errors against the actual coefficients.
-
-With odd symmetry supplied, the increment fit gives
-`mu(X) = 0.782957*X - 1.17707*X**3`, drift RMSE `0.149874`, and Brownian-path
-RMSE `0.390244`. The unrestricted increment fit gives drift RMSE `0.201668`
-but Brownian-path RMSE `12.8687`: a small drift bias can accumulate over the
-long observation period. These are results for one fixed trajectory.
-
-Open the notebook and choose **Run All**, or run:
-
-```bash
 .venv/bin/python scripts/run_experiment.py experiments/double_well/Stochastic_SINDy_Double_Well.ipynb --in-place
 ```
 
-Completed figures are embedded in the notebook. Numerical results and tuning
-tables are saved under `outputs/double_well/`. The earlier experiments are unchanged.
+The executed notebooks contain the plots and results. Numerical results are
+saved under `outputs/ou/` and `outputs/double_well/`. The existing double-well
+[LaTeX note](output/pdf/double_well/double_well_changes.tex) and
+[PDF](output/pdf/double_well/double_well_changes.pdf) describe this revision.
+The Black-Scholes, constant, and quadratic notebooks are unchanged.
 
 ## Run locally in VS Code
 

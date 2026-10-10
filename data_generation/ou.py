@@ -14,5 +14,3 @@ def sigma(x):
 
 
 t, dt, S_, W_, mu_exact_, sigma_exact_ = simulate(mu, sigma, N, T, S0, seed)
-t = np.arange(N) * dt
-W_ = np.r_[0.0, W_[:-1]]

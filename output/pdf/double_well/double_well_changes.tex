@@ -21,216 +21,73 @@
 \newcommand{\file}[1]{\texttt{\detokenize{#1}}}
 \newcommand{\RMSE}{\operatorname{RMSE}}
 \begin{document}
-{\LARGE\bfseries\color{accent}What changed for the double well?}\par
-{\small Experiment version: \file{d20b401}\qquad Prepared: 8 October 2026}
+{\LARGE\bfseries\color{accent}Double well: Black-Scholes workflow}\par
+{\small Revised: 10 October 2026}
 
-The main change was to add two drift estimates from observed increments, alongside the existing Method 1, Method 2, and ODE2. One new fit allows general polynomials; the other supplies the known odd symmetry of the drift. \textbf{The improved result with odd symmetry is a separate comparison, not an improvement to the original drift equations.}
+The OU and double-well notebooks now repeat the Black-Scholes experiment. The extra increment-based drift fits, odd-symmetry fit, and separate OU library have been removed. The earlier long double-well simulation and its results have been replaced. This note supersedes the previous description of those additional comparisons.
 
-\heading{1. Process and simulation}
-The supplied image was interpreted as the It\^o SDE
-\begin{equation*}
- dX_t=\underbrace{(0.5X_t-X_t^3)}_{\mu(X_t)}\,dt
-       +\underbrace{(1+0.25X_t^2)}_{\sigma(X_t)}\,dB_t^P.
-\end{equation*}
-The first differential on the right of the image was treated as a typo for $dt$. The drift is $-V'(x)$ for $V(x)=x^4/4-x^2/4$, with wells at $x=\pm1/\sqrt{2}$.
+\heading{1. Simulation and initial conditions}
+Both experiments use $N=100000$, $T=1$, $X_0=1$, and random seed 3, matching Black-Scholes. The fine step is $\Delta t=10^{-5}$. The same Euler simulation convention, time grid, and Brownian indexing are retained.
+\begin{align*}
+\text{OU:}\qquad dX_t&=-0.5X_t\,dt+0.3\,dB_t^P,\\
+\text{Double well:}\qquad dX_t&=(0.5X_t-X_t^3)\,dt+(1+0.25X_t^2)\,dB_t^P.
+\end{align*}
+The drift differential in the supplied double-well image is interpreted as $dt$. Every drift method receives the known initial drift $\mu(X_0)=-0.5$. ODE2 also receives the known initial spatial slope: $-0.5$ for OU and $-2.5$ for the double well. No slope is estimated from data.
 
-\begin{center}\small
-\begin{tabularx}{\linewidth}{@{}Xrr@{}}
-\toprule
-Setting & Previous OU experiment & Double well\\
-\midrule
-Stored samples $N$ & $100{,}000$ & $1{,}000{,}000$\\
-Observation horizon $T$ & $1$ & $200$\\
-Fine time step $\Delta t=T/N$ & $10^{-5}$ & $2\times10^{-4}$\\
-Initial state $X_0$ & $1$ & $1$\\
-Random seed & $3$ & $42$\\
-Signature window $M$ & $100$ & $100$\\
-Coarse samples $K=N/M$ & $1{,}000$ & $10{,}000$\\
-Coarse time step $h=M\Delta t$ & $0.001$ & $0.02$\\
-\bottomrule
-\end{tabularx}
-\end{center}
-The longer horizon lets the path visit both wells. The fine step is also larger than in OU; this is not merely the same discretization run for longer. The existing Euler simulation is reused. State, time, and Brownian samples are aligned as in OU. There are $N-1$ observed increments, with last recorded time $T-\Delta t$.
+\heading{2. Same experiment stages}
+\begin{enumerate}[leftmargin=1.5em,itemsep=5pt]
+\item Simulate the process and calculate quadratic variation using the original Black-Scholes scripts' computation and indexing.
+\item Estimate $\sigma^2$ with the same degree-4 polynomial library and SR3. Only the diffusion regression parameters are tuned.
+\item Calculate diffusion derivatives by the same finite-difference stages as Black-Scholes. The separate analytic-derivative helper is no longer used.
+\item Recover $B^Q$, fit the same signature model, and coarse-grain with $M=100$. There are $K=1000$ coarse samples and coarse step $h=0.001$.
+\item Compare Method 1, Method 2, and ODE2 with the actual drift, using their existing equations without modification.
+\item Recover $B^P$ using \textbf{Method 1 only}, as in Black-Scholes. Method 2 and ODE2 remain drift comparisons.
+\item Run \textbf{one} SSISDE fit using that noise path and the original Black-Scholes settings.
+\end{enumerate}
 
-The recorded state range is $[-2.57273,\,2.76237]$; the path is below zero for approximately $57.18\%$ of the recorded samples. The seed was fixed, not selected by comparing errors across seeds.
+The final SSISDE fit has degree-5 drift and diffusion libraries, seven time-series folds, 35 geometrically spaced $\alpha$ values from $10^{-5}$ to $10$, and $\rho\in\{0.3,0.4,0.5,0.7,0.85,0.95,1\}$. The one-standard-error selection rule is unchanged.
 
-\heading{2. Files added and code reused}
-\begin{itemize}
-\item \file{data_generation/double_well.py}: process coefficients and simulation settings.
-\item \file{models/increment_drift.py}: the two new increment-based comparisons.
-\item \file{experiments/double_well/}: a separate executed notebook and figures.
-\end{itemize}
-Existing diffusion, signature, drift-recovery, noise-recovery, and SSISDE model files were reused without modification. Earlier experiments were unchanged. The README was extended to describe the new case.
+There are no additional drift estimators, symmetry assumptions, alternative final libraries, or extra model comparisons. Poor recovery is retained for inspection. The Black-Scholes, constant, and quadratic notebooks were not changed by this revision.
 
 \newpage
-\heading{3. Diffusion regression: same method, different search grid}
-The target is a degree-4 polynomial for $q(x)=\sigma^2(x)$. The complete library remains $\{1,x,x^2,x^3,x^4\}$; even symmetry is \emph{not} imposed here. The exact variance, used only for comparison, is
-\[
- q(x)=(1+0.25x^2)^2=1+0.5x^2+0.0625x^4.
-\]
-As in OU, the code computes cumulative quadratic variation from every preceding squared increment, differentiates it with the existing order-3 finite-difference method, and fits SR3. Derivatives of $\hat\sigma=\sqrt{\hat q}$ come analytically from the fitted polynomial.
+\heading{3. Diffusion tuning}
+The existing diffusion search fits on the first $80\%$ of the observations, with a three-sample gap before validation on the last $20\%$. Nonconverged candidates and nonpositive predicted variance on observed states are rejected. The selected settings are refitted on the full path. The true diffusion is used only for reporting errors.
 
-\begin{center}\small
-\begin{tabularx}{\linewidth}{@{}lXX@{}}
-\toprule
-Setting & OU & Double well\\
-\midrule
-SR3 thresholds & $0.1,\ 0.3,\ 1,\ 3$ & $0.1,\ 1,\ 3,\ 10$\\
-Relaxation parameter $\nu$ & $0.1,\ 0.5,\ 2$ & Same\\
-Iterations / tolerance & $10{,}000$ / $10^{-8}$ & Same\\
-Selection & Last $20\%$ of the path & Same\\
-\bottomrule
-\end{tabularx}
-\end{center}
-The fit uses the first $80\%$ for training, leaving a three-sample gap before validation. Selection rejects nonconverged fits or nonpositive predicted variance on the observed path. The selected settings are refitted on all samples. The true diffusion is not used for selection.
+OU searches thresholds $\{0.1,0.3,1,3\}$; the double well searches $\{0.01,0.1,0.3,1,3,10\}$. Both search $\nu\in\{0.1,0.5,2\}$, with maximum iterations $10000$ and tolerance $10^{-8}$.
 
-The selected threshold is $1$, with $\nu=0.5$. The full-data estimate is
-\[
- \hat q(x)=1.00198797+0.50032259x^2+0.05995041x^4,
- \qquad \RMSE(\hat\sigma)=0.00170021.
-\]
-This RMSE is for $\sqrt{\hat q}$, not for $\hat q$. Positivity on observed states does not, in general, guarantee positivity outside their range.
+The selected threshold is $3$ in both cases. The selected $\nu$ is $2$ for OU and $0.5$ for the double well. Their fitted variance functions are
+\begin{align*}
+\hat\sigma^2_{\rm OU}(x)&=0.08940725,\\
+\hat\sigma^2_{\rm DW}(x)&=0.98821428+0.02488806x+0.51636376x^2.
+\end{align*}
+The double-well fit is not forced to contain the exact terms. It is selected from the same polynomial library using observed data.
 
-\heading{4. Original drift methods: unchanged, with a new diagnostic}
-The signature stage still uses $M=100$, ridge parameter $0.01$, and the same six signature columns. Methods 1 and 2 receive $\mu(X_0)=-0.5$. ODE2 also receives the \emph{known spatial slope} $\mu'(X_0)=-2.5$. No estimated-slope ODE2 experiment was added.
-
-For Method 2, the implemented expression gives $b=0$. Its continuous state-space equation $\mu'=(\sigma'/\sigma)\mu$ therefore preserves $\mu/\sigma$. The double-well ratio $(0.5x-x^3)/(1+0.25x^2)$ is not constant. The numerical recurrence can introduce additional error along the fluctuating path.
-
-ODE2 requires
-\[
- \mu''=A\mu'+B\mu,\qquad
- A=\frac{2\sigma'}{\sigma},\qquad
- B=\frac{\sigma''}{\sigma}+\frac{2(\sigma')^2}{\sigma^2}.
-\]
-At $x=1$, the exact functions give $A=0.8$, $B=0.72$, and
-\[
- \mu''-A\mu'-B\mu=-6-0.8(-2.5)-0.72(-0.5)=-3.64\ne0.
-\]
-Thus, even exact diffusion cannot make this ODE2 equation exact for the stated drift. This diagnostic is not fed into the estimators. Method 1 also performs poorly in this run; that empirical result is distinct from the algebraic checks above.
-
-\newpage
-\heading{5. New comparison: drift from observed increments}
-The additional fit uses only the fine-grid states and $\Delta t$. For a polynomial library $\phi(x)$, it estimates
-\[
- \Delta X_i\approx\phi(X_i)c\,\Delta t.
-\]
-For each training fold, let $s_j$ be the root-mean-square value of library column $j$, and let $Z_{ij}=\phi_j(X_i)/s_j$. The fitted scaled coefficients solve
-\[
- \hat\beta=\arg\min_\beta
- \left\{\frac{1}{\Delta t}\|\Delta X-\Delta t Z\beta\|_2^2
-               +\lambda\|\beta\|_2^2\right\},
- \qquad \hat c_j=\hat\beta_j/s_j.
-\]
-This corresponds to the implemented system
-$(\Delta t\,Z^\top Z+\lambda I)\hat\beta=Z^\top\Delta X$.
-Column scales are estimated from each training fold, not its validation data.
-
-The search uses degrees $1,2,3,4,5$, penalties $\lambda\in\{0,0.01,0.1,1,10\}$, and five expanding time-series folds. The validation score is
-\[
- L=\frac{1}{|\mathcal V|}\sum_{i\in\mathcal V}
- \left(\hat\mu(X_i)^2-\frac{2\hat\mu(X_i)\Delta X_i}{\Delta t}\right).
-\]
-This is squared error against $\Delta X_i/\Delta t$ after subtracting a candidate-independent term. Negative scores are allowed. The code finds the lowest mean score, admits models within one standard error of that score, chooses the smallest degree, and then the lowest mean score at that degree. It refits on the full path.
-
-The selected general fit has degree $3$ and $\lambda=1$:
-\[
- \hat\mu_{\rm general}(x)
- =-0.0967098+0.763423x-0.0536947x^2-1.18526x^3.
-\]
-It supplies neither the true initial drift nor the initial slope. It is a separate long-observation comparison, not a replacement for signature-based estimation of $\psi_{21}$.
-
-\heading{6. New comparison with supplied odd symmetry}
-The second fit supplies the property $\mu(-x)=-\mu(x)$. Its candidate libraries are
-\[
- \{x\},\qquad\{x,x^3\},\qquad\{x,x^3,x^5\}.
-\]
-It uses the same penalties and five-fold selection rule. The selected degree is again $3$, with $\lambda=1$:
-\[
- \boxed{\hat\mu_{\rm odd}(x)=0.782957x-1.17707x^3.}
-\]
-The true coefficients $0.5$ and $-1$ are not supplied. Odd symmetry, including $\mu(0)=0$, \emph{is} supplied from the stated model; it was not discovered from data. Neither increment fit is constrained to match $\mu(1)=-0.5$ or $\mu'(1)=-2.5$.
-
-The true Brownian path is not an input to either fit. The degree, penalty, and SR3 parameters are selected from observed data, but the additional symmetry itself is prior information. Reported errors are measured after refitting on the same trajectory, not on an independent test path.
-
-\newpage
-\heading{7. Noise recovery and final SSISDE fit}
-All five comparisons use the same estimated diffusion, recovered $B^Q$, and coarse step $h=0.02$. Noise recovery is unchanged:
-\[
- \Delta\hat B_i^P=\Delta\hat B_i^Q
-              -\frac{\hat\mu(X_i)}{\hat\sigma(X_i)}h,
- \qquad \hat B_0^P=0.
-\]
-Small drift biases can accumulate when these increments are summed. A lower pointwise drift RMSE does not necessarily imply a lower Brownian-path RMSE.
-
-\begin{center}\small
-\begin{tabular}{@{}lrrr@{}}
-\toprule
-Drift estimate & Drift RMSE & $B^P$ path RMSE & $\Delta B^P$ RMSE\\
-\midrule
-Method 1 & 1.347405 & 5.230128 & 0.017500\\
-Method 2 & 1.197744 & 6.079452 & 0.013957\\
-ODE2, known slope & 1.201497 & 4.505206 & 0.014134\\
-General increment fit & 0.201668 & 12.868740 & 0.004806\\
-Odd increment fit & 0.149874 & 0.390244 & 0.004246\\
-\bottomrule
-\end{tabular}
-\end{center}
-These are coarse-grid errors before SSISDE. Each RMSE is the square root of the mean squared difference from the corresponding simulated drift, Brownian path, or Brownian increments.
-
-The final SSISDE implementation is unchanged and retains degree-5 libraries for both drift and diffusion. Its search settings differ from OU:
-\begin{center}\small
-\begin{tabularx}{\linewidth}{@{}lXX@{}}
-\toprule
-Setting & OU & Double well\\
-\midrule
-Time-series folds & $7$ & $5$\\
-Elastic-net $\alpha$ grid & $35$ values, $10^{-5}$ to $10$ & $21$ values, $10^{-6}$ to $1$\\
-Mixing values $\rho$ & $.3,.4,.5,.7,.85,.95,1$ & $.5,.9,1$\\
-Selection rule & One standard error & Same\\
-\bottomrule
-\end{tabularx}
-\end{center}
-The smaller search is used for the longer coarse trajectory. The odd-noise comparison uses the \emph{general} degree-5 SSISDE libraries, not an odd-only final library.
-
-\begin{center}\small
+\heading{4. Completed runs}
+The following errors are from the revised notebooks. Diffusion error in the first row refers to the initial SR3 estimate; the final two rows refer to SSISDE.
+\begin{center}
 \begin{tabular}{@{}lrr@{}}
 \toprule
-Noise supplied to SSISDE & Final drift RMSE & Final diffusion RMSE\\
+RMSE & OU & Double well\\
 \midrule
-Method 1 & 1.200266 & 0.022644\\
-Method 2 & 1.200266 & 0.018175\\
-ODE2, known slope & 1.200266 & 0.018040\\
-General increment fit & 0.197696 & 0.020209\\
-Odd increment fit & 0.146471 & 0.020118\\
+Initial diffusion & 0.000990 & 0.004308\\
+Method 1 drift & 0.192703 & 0.591795\\
+Method 2 drift & 0.192586 & 0.423998\\
+ODE2 drift & 0.000000 & 1.014962\\
+Method 1 Brownian path & 0.320168 & 0.332766\\
+Final SSISDE drift & 0.192703 & 0.579673\\
+Final SSISDE diffusion & 0.000990 & 0.004688\\
 \bottomrule
 \end{tabular}
 \end{center}
-For the odd-noise comparison, the selected final model is
-\begin{align*}
- \hat\mu_{\rm SSISDE}(x)&=0.815064x-1.253827x^3+0.0202219x^5,\\
- \hat\sigma_{\rm SSISDE}(x)&=1.011768+0.224561x^2.
-\end{align*}
-Its $\alpha=0.00199526$ and $\rho=0.5$. The final diffusion is less accurate than the earlier SR3 estimate. SSISDE selects zero drift for the first three noise estimates. No convergence warnings were recorded for these final fits.
+For OU, ODE2's drift RMSE is approximately $2.50\times10^{-8}$ and uses the supplied slope. It does not supply noise to the final SSISDE fit. The final recovered drift is approximately $-0.500311+0.000313962x$ for OU and $-0.523664$ for the double well. These fits do not recover the corresponding true drift functions well, and are left unchanged.
 
-\newpage
-\heading{8. What the results show}
-Diffusion is estimated accurately on the observed states. The original three drift methods do not recover the cubic drift accurately in this run. The additional odd-symmetry fit improves drift and Brownian-path recovery, but its coefficients still differ from the exact $0.5x-x^3$.
+All errors compare against the simulated values using the Black-Scholes workflow's indexing. They are results from one trajectory, not independent test errors. Small SSISDE increment error alone is not proof of accurate drift recovery.
 
-The general increment fit has smaller drift error than the original methods but larger accumulated noise error. All comparisons are retained. Small SSISDE increment error is not independent evidence of drift recovery because the reconstructed noise already depends on the estimated drift.
-
-\begin{center}
-\includegraphics[width=0.95\linewidth]{figures/comparison.png}
-\end{center}
-{\small Comparison from the saved run. The upper panels show coefficient estimates before SSISDE; the lower panels compare the true Brownian path with the two increment-based reconstructions. Odd symmetry is supplied only in the labelled comparison.}
-
-\heading{9. Reproduce and inspect}
-From the repository root, run the notebook with the existing environment:
-\begin{quote}\small\ttfamily
-.venv/bin/python scripts/run\_experiment.py \\
-experiments/double\_well/Stochastic\_SINDy\_Double\_Well.ipynb \\
---in-place
-\end{quote}
-Join the three lines as one command, or open the notebook and choose \textbf{Run All}. It saves numerical results in \file{outputs/double_well/results.json}, tuning tables in the same folder, and figures under \file{experiments/double_well/}. The notebook retains its displayed outputs.
-
-\textbf{Scope.} This note describes commit \file{d20b401} without changing the experiments. Results come from its saved JSON and path arrays for one trajectory, not an independent test or a multi-seed study.
+\heading{5. Files and execution}
+Run either notebook with \textbf{Run All}:
+\begin{itemize}
+\item \file{experiments/ou/Stochastic_SINDy_OU.ipynb}
+\item \file{experiments/double_well/Stochastic_SINDy_Double_Well.ipynb}
+\end{itemize}
+The notebooks retain executed plots and printed results. Numerical results are saved in \file{outputs/ou/} and \file{outputs/double_well/}. The unused increment-fit, analytic-derivative, and cumulative-variation helper files were removed; the original Black-Scholes model files were not modified.
 \end{document}
