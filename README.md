@@ -154,6 +154,10 @@ mu_ode2, slope = recover_drift_ode2(
 
 The experiment notebooks show the complete sequence. Their parameters, formulas,
 seeds, array shapes, indexing, rounding, and model-selection settings are retained.
+The ODE2 coefficient has one correction: deriving `(mu/sigma)'' = 0` gives
+`B = sigma_2prime/sigma_pred - 2*sigma_prime**2/sigma_pred**2`.
+The squared-derivative term previously had the wrong sign. All five experiments
+have been rerun with this correction; their other settings are unchanged.
 `StochSINDy` remains a class with `fit`, `mu`, and `si` methods. Its plotting
 methods accept `output_prefix` explicitly instead of reading a notebook variable.
 
@@ -172,8 +176,11 @@ methods accept `output_prefix` explicitly instead of reading a notebook variable
 
 The untouched source notebooks remain in `original/`. The verification script
 compares the function outputs with the scripts at commit `d8152df`, before this
-refactor. It checks all five simulations and their recovery stages, diffusion
-fitting, and the three SSISDE penalties. This check needs a Git checkout containing
+refactor. It checks all five simulations and their unchanged recovery stages, diffusion
+fitting, and the three SSISDE penalties. ODE2 is checked separately against exact
+Black-Scholes and OU solutions and convergence to a nonlinear exact solution,
+since its corrected coefficient intentionally differs from that commit.
+This check needs a Git checkout containing
 that commit. Full notebook execution is a separate check.
 
 ```bash

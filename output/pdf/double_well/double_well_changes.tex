@@ -1,4 +1,4 @@
-\documentclass[11pt,letterpaper]{article}
+\documentclass[10pt,letterpaper]{article}
 \usepackage[margin=0.85in]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern,microtype,amsmath,amssymb,booktabs,tabularx,array,graphicx}
@@ -40,14 +40,21 @@ The drift differential in the supplied double-well image is interpreted as $dt$.
 \item Estimate $\sigma^2$ with the same degree-4 polynomial library and SR3. Only the diffusion regression parameters are tuned.
 \item Calculate diffusion derivatives by the same finite-difference stages as Black-Scholes. The separate analytic-derivative helper is no longer used.
 \item Recover $B^Q$, fit the same signature model, and coarse-grain with $M=100$. There are $K=1000$ coarse samples and coarse step $h=0.001$.
-\item Compare Method 1, Method 2, and ODE2 with the actual drift, using their existing equations without modification.
+\item Compare Method 1, Method 2, and ODE2 with the actual drift. ODE2 uses the corrected sign described below.
 \item Recover $B^P$ using \textbf{Method 1 only}, as in Black-Scholes. Method 2 and ODE2 remain drift comparisons.
 \item Run \textbf{one} SSISDE fit using that noise path and the original Black-Scholes settings.
 \end{enumerate}
 
 The final SSISDE fit has degree-5 drift and diffusion libraries, seven time-series folds, 35 geometrically spaced $\alpha$ values from $10^{-5}$ to $10$, and $\rho\in\{0.3,0.4,0.5,0.7,0.85,0.95,1\}$. The one-standard-error selection rule is unchanged.
 
-There are no additional drift estimators, symmetry assumptions, alternative final libraries, or extra model comparisons. Poor recovery is retained for inspection. The Black-Scholes, constant, and quadratic notebooks were not changed by this revision.
+There are no additional drift estimators, symmetry assumptions, alternative final libraries, or extra model comparisons. Poor recovery is retained for inspection. All five experiments were rerun after correcting ODE2.
+
+Setting $(\mu/\sigma)''=0$, with derivatives in the state variable, gives
+\[
+\mu''=2\frac{\sigma'}{\sigma}\mu'
++\left(\frac{\sigma''}{\sigma}-2\frac{(\sigma')^2}{\sigma^2}\right)\mu.
+\]
+The squared-derivative term previously had a plus sign. Only this sign was corrected; initial conditions and numerical settings are unchanged.
 
 \newpage
 \heading{3. Diffusion tuning}
@@ -72,7 +79,7 @@ RMSE & OU & Double well\\
 Initial diffusion & 0.000990 & 0.004308\\
 Method 1 drift & 0.192703 & 0.591795\\
 Method 2 drift & 0.192586 & 0.423998\\
-ODE2 drift & 0.000000 & 1.014962\\
+ODE2 drift & 0.000000 & 1.038716\\
 Method 1 Brownian path & 0.320168 & 0.332766\\
 Final SSISDE drift & 0.192703 & 0.579673\\
 Final SSISDE diffusion & 0.000990 & 0.004688\\
@@ -89,5 +96,5 @@ Run either notebook with \textbf{Run All}:
 \item \file{experiments/ou/Stochastic_SINDy_OU.ipynb}
 \item \file{experiments/double_well/Stochastic_SINDy_Double_Well.ipynb}
 \end{itemize}
-The notebooks retain executed plots and printed results. Numerical results are saved in \file{outputs/ou/} and \file{outputs/double_well/}. The unused increment-fit, analytic-derivative, and cumulative-variation helper files were removed; the original Black-Scholes model files were not modified.
+The notebooks retain executed plots and printed results. Numerical results are saved in \file{outputs/ou/} and \file{outputs/double_well/}. The ODE2 correction is in \file{models/drift_recovery_from_ODE2.py} and applies to every experiment.
 \end{document}

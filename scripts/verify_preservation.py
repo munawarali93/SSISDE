@@ -1,4 +1,4 @@
-"""Compare function outputs with the scripts before the function refactor."""
+"""Check preserved stages and the corrected ODE2 equation."""
 import ast
 import importlib
 import json
@@ -70,14 +70,11 @@ def check_case(case):
         equal(dW, old['dW'])
         S, drift, diffusion = simulate_process(dW, dt, old['S0'], r=old['r'], sigm=old['sigm'])
         actual = t, dt, S, W, drift, diffusion
-        slope = old['r']
     else:
         run_reference('data_generation/simulation.py', old)
         code = reference(f'data_generation/{case}.py')
         exec(code.replace('from data_generation.simulation import simulate', ''), old)
         actual = importlib.import_module(f'data_generation.{case}').generate_data()
-        slope = {'constant': 0.0, 'quadratic': 0.7 + 0.6*old['S0'],
-                 'ou': -0.5, 'double_well': 0.5 - 3*old['S0']**2}[case]
     for value, key in zip(actual, ['t', 'dt', 'S_', 'W_', 'mu_exact_', 'sigma_exact_']):
         equal(value, old[key])
 
@@ -118,12 +115,6 @@ def check_case(case):
     for value, key in zip(recover_drift(*(old[k] for k in ['S', 'a', 'b', 'b_', 'mu_0'])),
                           ['mu_pred1', 'mu_pred2']):
         equal(value, old[key])
-    old['lambda_0'] = slope
-    run_reference('models/drift_recovery_from_ODE2.py', old)
-    values = recover_drift_ode2(*(old[k] for k in
-        ['S', 'sigma_pred', 'sigma_prime', 'sigma_2prime', 'mu_0', 'lambda_0']))
-    for value, key in zip(values, ['mu_pred11', 'lamda_pred']):
-        equal(value, old[key])
     for filename, function, drift_name in [
         ('p_brownian_motion', recover_p_noise, 'mu_pred1'),
         ('p_brownian_motion_method2', recover_p_noise_method2, 'mu_pred2'),
@@ -132,7 +123,36 @@ def check_case(case):
         for value, key in zip(function(old['BQ'], old[drift_name], old['sigma_pred'], old['T']),
                               ['BP', 'dt', 't']):
             equal(value, old[key])
-    print(f'PASS: {case}: simulation and every recovery stage match exactly.', flush=True)
+    print(f'PASS: {case}: simulation and recovery stages other than corrected ODE2 match exactly.', flush=True)
+
+
+def check_ode2():
+    # For Black-Scholes, mu/sigma is constant, including on a nonmonotone path.
+    x = np.array([1.0, 1.2, 0.9, 1.1, 0.8])
+    drift, slope = recover_drift_ode2(x, 0.3*x, np.full_like(x, 0.3),
+                                    np.zeros_like(x), 0.5*x[0], 0.5)
+    np.testing.assert_allclose(drift, 0.5*x, rtol=1e-13, atol=1e-13)
+    np.testing.assert_allclose(slope, 0.5, rtol=1e-13, atol=1e-13)
+
+    # Constant diffusion gives a linear drift (OU).
+    drift, slope = recover_drift_ode2(x, np.full_like(x, 0.3), np.zeros_like(x),
+                                    np.zeros_like(x), -0.5*x[0], -0.5)
+    np.testing.assert_allclose(drift, -0.5*x, rtol=1e-13, atol=1e-13)
+    np.testing.assert_allclose(slope, -0.5, rtol=1e-13, atol=1e-13)
+
+    # A known solution with nonzero sigma' and sigma'': mu=(0.7-0.2*x)*sigma.
+    errors = []
+    for intervals in [4000, 8000]:
+        x = np.linspace(0.2, 1.2, intervals + 1)
+        sigma = 1 + 0.25*x**2
+        exact = (0.7 - 0.2*x)*sigma
+        exact_slope = -0.2*sigma + (0.7 - 0.2*x)*0.5*x
+        drift, slope = recover_drift_ode2(x, sigma, 0.5*x, np.full_like(x, 0.5),
+                                        exact[0], exact_slope[0])
+        errors.append(max(np.max(abs(drift-exact)), np.max(abs(slope-exact_slope))))
+    assert errors[1] < 1e-4
+    assert 1.9 < errors[0]/errors[1] < 2.1
+    print('PASS: corrected ODE2 matches Black-Scholes and OU and converges to a nonlinear exact solution.', flush=True)
 
 
 def check_regression():
@@ -176,6 +196,7 @@ if __name__ == '__main__':
     with threadpool_limits(limits=1), warnings.catch_warnings():
         warnings.simplefilter('ignore', DeprecationWarning)
         check_modules()
+        check_ode2()
         for case in ['black_scholes', 'constant', 'quadratic', 'ou', 'double_well']:
             check_case(case)
         check_regression()

@@ -5,7 +5,7 @@ def recover_drift_ode2(S, sigma_pred, sigma_prime, sigma_2prime, mu_0, lambda_0)
     """Return the ODE2 drift and slope estimates."""
     K = len(S)
     A = 2 * sigma_prime / sigma_pred
-    B = sigma_2prime / sigma_pred + 2 * sigma_prime ** 2 / sigma_pred ** 2
+    B = sigma_2prime / sigma_pred - 2 * sigma_prime ** 2 / sigma_pred ** 2
     mu_pred11 = np.zeros(K)
     lamda_pred = np.zeros(K)
     mu_pred11[0] = mu_0
