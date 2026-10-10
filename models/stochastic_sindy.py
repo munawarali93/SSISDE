@@ -1,3 +1,9 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.linear_model import Lasso, ElasticNet
+from sklearn.model_selection import TimeSeriesSplit
+
+
 class StochSINDy:
     def __init__(self,
                  mu_deg=5, si_deg=5,          # poly degrees for μ and σ
@@ -242,7 +248,7 @@ class StochSINDy:
             print(msg)
 
     # ----------------- plots: CV surfaces/curves -----------------
-    def plot_cv(self):
+    def plot_cv(self, output_prefix="SSISDE"):
         if self.cv is None:
             print("No CV results.")
             return
@@ -267,7 +273,7 @@ class StochSINDy:
             ax[1].axvline(a_sel, ls='--', c='k'); ax[1].set_xlabel("alpha"); ax[1].set_ylabel("Validation MSE")
             ax[1].set_title("CV curves per ρ value"); ax[1].grid(True); ax[1].legend(ncol=2)
             fig.tight_layout()
-            plt.savefig(f"{model}_CV_curves.png", bbox_inches='tight', dpi=300)
+            plt.savefig(f"{output_prefix}_CV_curves.png", bbox_inches='tight', dpi=300)
             plt.show()
 
     # ----------------- plots: δ vs n -----------------
@@ -289,7 +295,7 @@ class StochSINDy:
         ordn = np.argsort(n)
         return np.asarray(n)[ordn], np.asarray(d)[ordn], np.asarray(s)[ordn]
 
-    def plot_size(self, count_bias=True):
+    def plot_size(self, count_bias=True, output_prefix="SSISDE"):
         if self.cv is None:
             print("No CV results.")
             return
@@ -329,11 +335,11 @@ class StochSINDy:
         ax[1].set_xlabel(r'$n_\sigma$'); ax[1].set_ylabel(r'CV error $\delta(n)$'); ax[1].set_title('δ vs n (σ)'); ax[1].grid(True); ax[1].legend()
 
         fig.tight_layout()
-        plt.savefig(f"{model}_delta_vs_n.png", bbox_inches='tight', dpi=300)
+        plt.savefig(f"{output_prefix}_delta_vs_n.png", bbox_inches='tight', dpi=300)
         plt.show()
 
     # ----------------- quick results plot -----------------
-    def plot_results(self, X, BP, BQ, W, mu_true=None, si_true=None):
+    def plot_results(self, X, BP, BQ, W, mu_true=None, si_true=None, output_prefix="SSISDE"):
         if self.mu_c is None or self.si_c is None:
             raise ValueError("Fit first.")
         X = np.asarray(X).ravel(); BP = np.asarray(BP).ravel()
@@ -369,7 +375,5 @@ class StochSINDy:
         a4.set_title('Path'); a4.set_xlabel('t'); a4.set_ylabel('$X_t$'); a4.legend(); a4.grid(True)
 
         plt.tight_layout()
-        plt.savefig(f"{model}_results.png", bbox_inches='tight', dpi=300)
+        plt.savefig(f"{output_prefix}_results.png", bbox_inches='tight', dpi=300)
         plt.show()
-
-

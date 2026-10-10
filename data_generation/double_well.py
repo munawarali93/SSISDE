@@ -1,15 +1,15 @@
 import numpy as np
 from data_generation.simulation import simulate
 
-N, T, S0, seed = 100000, 1.0, 1.0, 3
-
 
 def mu(x):
-    return 0.5 * x - x**3
+    return 0.5 * x - x ** 3
 
 
 def sigma(x):
-    return 1.0 + 0.25 * x**2
+    return 1.0 + 0.25 * x ** 2
 
 
-t, dt, S_, W_, mu_exact_, sigma_exact_ = simulate(mu, sigma, N, T, S0, seed)
+def generate_data(N=100000, T=1.0, S0=1.0, seed=3):
+    """Return t, dt, X, W, actual drift, and actual diffusion."""
+    return simulate(mu, sigma, N, T, S0, seed)

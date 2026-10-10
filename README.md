@@ -6,11 +6,11 @@ and double-well SSISDE experiments.
 ## Layout
 
 ```text
-data_generation/    Original parameters, process simulation, and coarse graining (.py)
-models/             Original variation, diffusion, signature, drift, noise, and SINDy code (.py)
+data_generation/    Functions for process coefficients, simulation, and coarse graining (.py)
+models/             Functions for variation, diffusion, signatures, drift, noise, and SINDy (.py)
 experiments/        Separate folders with notebooks and plots for each process
 original/           Untouched input notebook, including its original outputs
-scripts/            Source-preservation check and full notebook runner
+scripts/            Numerical-preservation check and full notebook runner
 requirements.txt    Scientific dependencies
 requirements-dev.txt Scientific dependencies plus Jupyter execution tools
 ```
@@ -131,24 +131,54 @@ Git operations in the local VS Code workspace.
 Reference: [Google's Colab VS Code extension instructions](https://github.com/googlecolab/colab-vscode).
 Local execution is verified separately from a live Colab session.
 
-## Code preservation
+## Functions and code preservation
 
-The scientific code is extracted verbatim. `%run -i` executes each script in the
-notebook namespace, preserving the original globals and order; these files are
-execution stages, not independent importable APIs. Run them through the experiment.
-In particular, `StochSINDy` still uses the notebook's global `model` value for plot
-filenames. No formulas, random seeds, sample sizes, estimators, CV grids, thresholds,
-or plotting commands were changed.
+The notebooks import functions from `data_generation/` and `models/`. Each
+stage receives its inputs and returns its outputs; there is no `%run -i` or
+shared notebook namespace. For example:
 
-The added code handles project discovery, remote download, and environment setup.
-The original `!pip` cell is replaced by an installation targeting the selected
-Python kernel. Its four version pins are unchanged. `iisignature`, `matplotlib`,
-and `tqdm` are also pinned, and `setuptools<81` retains `pkg_resources` for PySINDy.
-An untouched copy of the supplied notebook is retained in `original/`.
+```python
+from data_generation.ou import generate_data
+from models.drift_recovery import recover_drift
+from models.drift_recovery_from_ODE2 import recover_drift_ode2
+
+t, dt, X, W, mu_true, sigma_true = generate_data(
+    N=100000, T=1.0, S0=1.0, seed=3,
+)
+# After computing the diffusion, signature, and drift coefficients:
+mu_pred1, mu_pred2 = recover_drift(S, a, b, b_, mu_0)
+mu_ode2, slope = recover_drift_ode2(
+    S, sigma_pred, sigma_prime, sigma_2prime, mu_0, lambda_0,
+)
+```
+
+The experiment notebooks show the complete sequence. Their parameters, formulas,
+seeds, array shapes, indexing, rounding, and model-selection settings are retained.
+`StochSINDy` remains a class with `fit`, `mu`, and `si` methods. Its plotting
+methods accept `output_prefix` explicitly instead of reading a notebook variable.
+
+| Function | Returns |
+|---|---|
+| `generate_noise(N, T, seed)` | Time grid, time step, Brownian increments and path |
+| Each process module's `generate_data(...)` | Time, step, state, Brownian path, actual drift and diffusion |
+| `estimate_quadratic_variation(S, t)` | Quadratic variation, its derivative, difference method |
+| `diffusion_derivatives(sigma, S, method)` | First, second and third derivatives |
+| `fit_signature(S, BQ, t, keep_cols, M)` | Signature coefficient for each window |
+| `coarse_grain(...)` | The six coarse arrays used by the drift and noise stages |
+| `drift_coefficients(...)` | Initial drift and coefficients `a`, `b`, `b_` |
+| `recover_drift(...)` | Method 1 and Method 2 drift estimates |
+| `recover_drift_ode2(...)` | Drift and slope estimates |
+| `recover_p_noise(...)` | P-noise path, coarse time step and time grid |
+
+The untouched source notebooks remain in `original/`. The verification script
+compares the function outputs with the scripts at commit `d8152df`, before this
+refactor. It checks all five simulations and their recovery stages, diffusion
+fitting, and the three SSISDE penalties. This check needs a Git checkout containing
+that commit. Full notebook execution is a separate check.
 
 ```bash
 .venv/bin/python scripts/verify_preservation.py
-.venv/bin/python scripts/run_experiment.py
+.venv/bin/python scripts/run_experiment.py --in-place
 ```
 
 The runner writes the Black-Scholes execution record to `outputs/black_scholes/`.
@@ -172,5 +202,5 @@ MSE: 5.244e-09
 
 The run emitted a convergence warning and dependency deprecation warnings, but
 no execution errors. These are recorded in the local executed notebook; the
-scientific code and solver settings were left unchanged. The source-preservation
-check and `pip check` also passed. A live Colab run has not yet been verified.
+scientific code and solver settings were left unchanged. The numerical-preservation
+check and full notebook executions also passed. A live Colab run has not yet been verified.

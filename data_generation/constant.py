@@ -1,16 +1,15 @@
 import numpy as np
 from data_generation.simulation import simulate
 
-N, T, S0, seed = 100000, 1.0, 1.0, 31
-r, sigm = 0.5, 1.0
 
-
-def mu(x):
+def mu(x, r=0.5):
     return r * np.ones_like(x)
 
 
-def sigma(x):
+def sigma(x, sigm=1.0):
     return sigm * np.ones_like(x)
 
 
-t, dt, S_, W_, mu_exact_, sigma_exact_ = simulate(mu, sigma, N, T, S0, seed)
+def generate_data(N=100000, T=1.0, S0=1.0, seed=31, r=0.5, sigm=1.0):
+    """Return t, dt, X, W, actual drift, and actual diffusion."""
+    return simulate(lambda x: mu(x, r), lambda x: sigma(x, sigm), N, T, S0, seed)
