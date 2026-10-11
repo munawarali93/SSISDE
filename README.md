@@ -23,8 +23,47 @@ requirements-dev.txt Scientific dependencies plus Jupyter execution tools
 - [Ornstein-Uhlenbeck](experiments/ou/Stochastic_SINDy_OU.ipynb)
 - [Double-well potential](experiments/double_well/Stochastic_SINDy_Double_Well.ipynb)
 
-The constant and quadratic notebooks compare Method 1, Method 2, and ODE2 against
-the actual drift. Simulations retain the supplied seeds, coefficients, and sample
+The seven main experiment notebooks, including the two double-well coefficient-study
+notebooks, fits SSISDE three times. Each fit uses noise recovered from its own
+drift estimate: Method 1, Method 2 or ODE2. All three use degree-5 libraries,
+seven folds, 35 alpha values and `rhos=[0.3, 0.4, 0.5, 0.7, 0.85, 0.95, 1.0]`.
+The drift panels are titled `Drift from Method 1`, `Drift from Method 2` and
+`Drift from ODE2`; each fit has separate CV, model-size and results plots.
+
+The fitted models and noise paths are available as `identifiers["Method 1"]`,
+`noise_paths["Method 1"]`, and the corresponding Method 2 and ODE2 entries.
+The final comparison table reports noise, fitted drift and fitted diffusion
+RMSE. Each notebook saves `ssisde_comparison.json` and
+`ssisde_comparison_paths.npz` in its output directory. Earlier single-method
+result fields retain their original noise source; `ssisde_comparison` contains
+all three fits.
+
+The separate [double-well SSISDE tuning notebook](experiments/double_well/ssisde_tuning/Stochastic_SINDy_Double_Well_SSISDE_Tuning.ipynb)
+compares the existing fits with 30 configurations per recovered-noise method.
+It tests polynomial degrees, weaker regularization, Elastic Net, Lasso, Ridge
+thresholds and both CV selection rules. The last 20% of coarse increments selects
+the configuration; inner CV uses only the first 80%. The selected configuration
+is refitted on the full path. True drift and diffusion are used only afterward
+to report error. The data and recovered noise paths are unchanged.
+
+For the original double well on seed 3, tuning leaves Method 1 and Method 2
+drift RMSE unchanged at `0.579673` and `0.417465`. ODE2's validation-selected
+cubic fit reduces increment validation error but increases actual drift RMSE
+from `0.997516` to `1.040098`. These settings do not improve drift recovery and
+have not replaced the main experiments' settings. All candidate settings and
+validation errors are saved beside the tuning notebook in `tuning_results.json`.
+Validation is conditional on the recovered noise, not an independent check of
+the whole recovery procedure. The tuning helper is
+`models.stochastic_sindy_tuning.tune_stochastic_sindy(X, BP, dt)`.
+
+All experiment notebooks compare Method 1, Method 2, and ODE2 against the actual
+drift in a single three-panel figure with a shared vertical scale and per-method
+RMSE, matching the constant-case layout. This includes Black-Scholes, constant,
+quadratic, OU, double well, both coefficient studies, and the tuning notebook.
+Each saves `drift_comparison.png` beside the notebook; the two coefficient studies
+use `drift_comparison_small_curvature.png` and `drift_comparison_linear_ratio.png`
+to keep their figures separate in the shared folder.
+Simulations retain the supplied seeds, coefficients, and sample
 sizes. ODE2 uses initial slope zero for the constant case and `0.7 + 0.6*S0` for
 the quadratic case. Black-Scholes keeps its default slope `r`.
 
@@ -62,16 +101,61 @@ experiment are displayed in its notebook and saved to `outputs/quadratic/`.
 
 ## OU and double-well experiments
 
-Both notebooks repeat the Black-Scholes workflow with `N=100000`, `T=1`,
+The [double-well coefficient study](experiments/double_well/coefficient_study/Stochastic_SINDy_Double_Well_Small_Curvature.ipynb)
+repeats the same workflow with `mu(x) = 0.5*x - 0.01*x**3` and
+`sigma(x) = 1 + 0.01*x**2`. These coefficients gave the smallest RMS of
+`(mu/sigma)''` along the seed-3 path among six tested sets with positive quadratic
+diffusion coefficients. Two decreasing-diffusion cases were also tested. The notebook contains
+the complete executed experiment and a comparison table. The original
+double-well notebook below remains the baseline.
+
+`data_generation.double_well.generate_data` accepts the coefficients `a, b, c, d`
+for `mu(x) = a*x - b*x**3` and `sigma(x) = c + d*x**2`. Its defaults preserve the
+original problem. In the new notebook, edit the `coefficients` dictionary.
+ODE2's initial slope is computed from those coefficients. Other numerical and
+regression settings are unchanged.
+
+With seed 3, the selected problem reduces curvature RMS from `1.792701` to
+`0.043851`, and ODE2 drift RMSE from `1.038716` to `0.010529` (relative RMSE
+`4.29%`). The potential is `V(x) = 0.0025*x**4 - 0.25*x**2`, with wells at
+`+/-sqrt(50)`. The observed path lies between approximately `-0.1523` and
+`1.1005`, so this tests the central region, not transitions between both wells.
+The condition is approximate, not an identity for all states. A lower-noise
+variant (`c=0.5`) has higher curvature RMS but lower ODE2 error; curvature alone
+does not determine numerical recovery accuracy. The coefficient-screening
+results use Method 1 noise for the final SSISDE fit; the experiment notebooks
+now additionally fit using Method 2 and ODE2 noise.
+
+The [exact-ratio experiment](experiments/double_well/coefficient_study/Stochastic_SINDy_Double_Well_Linear_Ratio.ipynb)
+uses `mu(x) = 0.5*x - 0.125*x**3` and `sigma(x) = 1 - 0.25*x**2`.
+Here `mu/sigma = 0.5*x` on `(-2, 2)`, and the diffusion vanishes at the wells
+`+/-2`. Despite zero ratio curvature, its seed-3 ODE2 RMSE is `0.164352`:
+satisfying the assumption exactly does not remove errors in the estimation and
+numerical recovery stages.
+
+Trial results, including separate seed-7 and seed-11 checks for the original,
+small-curvature, lower-noise and exact-ratio cases, are stored as JSON next to the notebooks.
+For the small-curvature case, ODE2 RMSE is `0.020724` on seed 7 and `0.437719`
+on seed 11, so the seed-3 gain is not uniform across trajectories. The original
+problem's seed-11 diffusion fit failed the existing convergence/positivity checks;
+its JSON records the failure. All other 15 trials completed with the same settings.
+To repeat the coefficient study:
+
+```bash
+.venv/bin/python scripts/compare_double_well_coefficients.py
+.venv/bin/python scripts/compare_double_well_coefficients.py --cases original cubic_001 lower_noise matched_factor --seeds 7 11
+```
+
+The baseline OU and double-well notebooks repeat the Black-Scholes workflow with `N=100000`, `T=1`,
 `X0=1`, and seed 3. OU uses `mu(X) = -0.5*X`, `sigma(X) = 0.3`.
 The double well uses `mu(X) = 0.5*X - X**3`, `sigma(X) = 1 + 0.25*X**2`.
 
 They use the same quadratic-variation calculation, finite-difference derivatives,
 signature regression, coarse graining, and drift equations as Black-Scholes.
 Method 1, Method 2, and ODE2 are compared for drift. ODE2 uses the known initial
-slope (`-0.5` for OU and `-2.5` for the double well). Method 1 supplies the noise
-for the single final SSISDE fit, with the same degree-5 libraries, seven folds,
-35 alpha values, and seven elastic-net mixing values as Black-Scholes.
+slope (`-0.5` for OU and `-2.5` for the double well). Each drift method supplies
+its own noise for a separate final SSISDE fit, with the same degree-5 libraries,
+seven folds, 35 alpha values, and seven elastic-net mixing values as Black-Scholes.
 
 Only diffusion regression parameters are tuned. The existing degree-4 variance
 library and SR3 selection on the last 20% of the observed path are retained.

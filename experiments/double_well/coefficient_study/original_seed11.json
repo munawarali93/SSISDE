@@ -1,0 +1,13 @@
+{
+  "case": "original",
+  "seed": 11,
+  "coefficients": {
+    "a": 0.5,
+    "b": 1.0,
+    "c": 1.0,
+    "d": 0.25
+  },
+  "status": "failed",
+  "stage": "diffusion fit",
+  "error": "No converged candidate gave positive diffusion variance; revise the grid."
+}

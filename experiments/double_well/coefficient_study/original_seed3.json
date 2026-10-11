@@ -1,0 +1,56 @@
+{
+  "case": "original",
+  "seed": 3,
+  "coefficients": {
+    "a": 0.5,
+    "b": 1.0,
+    "c": 1.0,
+    "d": 0.25
+  },
+  "N": 100000,
+  "T": 1.0,
+  "S0": 1.0,
+  "M": 100,
+  "well_locations": [
+    -0.7071067811865476,
+    0.7071067811865476
+  ],
+  "state_range": [
+    -0.27624411155787276,
+    1.0915137854182813
+  ],
+  "curvature_rms": 1.7927012686088648,
+  "curvature_max_abs": 3.2784902576153785,
+  "actual_drift_rms": 0.11568439989965743,
+  "sigma_rmse": 0.00430766992534611,
+  "sigma_relative_rmse": 0.0041669554556835785,
+  "sigma_settings": {
+    "threshold": 3.0,
+    "nu": 0.5,
+    "validation_mse": 1.729465164559883,
+    "max_iter": 10000,
+    "tol": 1e-08,
+    "terms": 3,
+    "converged": true,
+    "full_fit_converged": true
+  },
+  "sigma_squared_equation": "0.98821428 1 + 0.02488806 X + 0.51636376 X^2",
+  "initial_drift": -0.5,
+  "initial_slope": -2.5,
+  "drift_rmse": {
+    "Method 1": 0.591794637152412,
+    "Method 2": 0.42399778437871927,
+    "ODE2": 1.0387159208246937
+  },
+  "ode2_relative_rmse": 8.978876337048533,
+  "noise_rmse": 0.3327663630628333,
+  "ssisde": {
+    "mu": "-0.523664",
+    "sigma": "0.993702 + 0.019956*X + 0.226928*X^2",
+    "drift_rmse": 0.579673259440964,
+    "diffusion_rmse": 0.0046881917222001334,
+    "increment_mse": 3.3427867299547544e-08,
+    "alpha": 0.0013111339374215643,
+    "rho": 0.4
+  }
+}

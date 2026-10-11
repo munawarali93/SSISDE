@@ -339,7 +339,7 @@ class StochSINDy:
         plt.show()
 
     # ----------------- quick results plot -----------------
-    def plot_results(self, X, BP, BQ, W, mu_true=None, si_true=None, output_prefix="SSISDE"):
+    def plot_results(self, X, BP, BQ, W, mu_true=None, si_true=None, output_prefix="SSISDE", drift_title="Drift"):
         if self.mu_c is None or self.si_c is None:
             raise ValueError("Fit first.")
         X = np.asarray(X).ravel(); BP = np.asarray(BP).ravel()
@@ -356,7 +356,7 @@ class StochSINDy:
         if mu_true is not None:
             if hasattr(mu_true, '__len__') and len(mu_true)==len(X): a1.plot(tt, np.asarray(mu_true)[idx], 'b', lw=1, alpha=0.7, label='μ true')
             else: a1.plot(np.linspace(0,1,1000), [mu_true(x) for x in np.linspace(X.min(), X.max(), 1000)], 'b', lw=1, label='μ(x)')
-        a1.set_title('Drift'); a1.set_xlabel('t'); a1.set_ylabel('$μ(X_t)$');  a1.legend(); a1.grid(True)
+        a1.set_title(drift_title); a1.set_xlabel('t'); a1.set_ylabel('$μ(X_t)$');  a1.legend(); a1.grid(True)
 
         a2.plot(tt, si_t, 'r', lw=1, label='σ̂');
         if si_true is not None:

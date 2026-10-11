@@ -1,0 +1,56 @@
+{
+  "case": "matched_factor",
+  "seed": 7,
+  "coefficients": {
+    "a": 0.5,
+    "b": 0.125,
+    "c": 1.0,
+    "d": -0.25
+  },
+  "N": 100000,
+  "T": 1.0,
+  "S0": 1.0,
+  "M": 100,
+  "well_locations": [
+    -2.0,
+    2.0
+  ],
+  "state_range": [
+    0.4129974063770656,
+    1.0556299049066191
+  ],
+  "curvature_rms": 0.0,
+  "curvature_max_abs": 0.0,
+  "actual_drift_rms": 0.324947692893025,
+  "sigma_rmse": 0.010571954634974751,
+  "sigma_relative_rmse": 0.012447614102258326,
+  "sigma_settings": {
+    "threshold": 3.0,
+    "nu": 2.0,
+    "validation_mse": 0.7095460990596628,
+    "max_iter": 10000,
+    "tol": 1e-08,
+    "terms": 2,
+    "converged": true,
+    "full_fit_converged": true
+  },
+  "sigma_squared_equation": "0.84184492 1 + -0.31186777 X^4",
+  "initial_drift": 0.375,
+  "initial_slope": 0.125,
+  "drift_rmse": {
+    "Method 1": 0.7980625625489807,
+    "Method 2": 0.2925917628555006,
+    "ODE2": 0.6961155186251823
+  },
+  "ode2_relative_rmse": 2.1422386859485973,
+  "noise_rmse": 0.4188066459528959,
+  "ssisde": {
+    "mu": "1.07379",
+    "sigma": "0.90499 + -0.173981*X^5",
+    "drift_rmse": 0.7518412231689899,
+    "diffusion_rmse": 0.012535206956995925,
+    "increment_mse": 1.3373975732913492e-07,
+    "alpha": 0.0008733261623828437,
+    "rho": 0.3
+  }
+}
