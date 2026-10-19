@@ -33,74 +33,84 @@ def footer(canvas, doc):
     canvas.drawRightString(A4[0] - 36, 23, f"{doc.page} / 2")
 
 story += [p("SSISDE function reference", "title"),
-          p("Inputs and outputs of all 23 Python files in data_generation/ and models/.", "small"),
+          p("Seven modules: three for data generation and four for estimation and recovery.", "small"),
           p("<b>Notation.</b> S or X = state path; t = time grid; dt = time step; N = sample count; "
-            "T = duration; S0 = initial state; seed = random seed. W is simulated Brownian motion, "
-            "BQ is recovered Q-noise, and BP is recovered physical Brownian motion. "
-            "A trailing underscore marks fine-grid arrays in the experiments. Tuples below follow the code's return order."),
-          p("data_generation/", "section")]
+            "T = duration; S0 = initial state. W is simulated Brownian motion, BQ is recovered Q-noise, "
+            "and BP is recovered physical Brownian motion. Trailing underscores mark fine-grid arrays. "
+            "Tuples below follow the code's return order."),
+          p("Data generation", "section")]
 
-entry("parameters.py", "<b>generate_noise</b>: input N, T, seed. Returns <b>(t, dt, dW, W)</b>: time grid, step, Brownian increments and cumulative Brownian path.")
-entry("processes.py", "<b>mu</b> and <b>sigma</b>: input state x, drift/diffusion label and coefficients; return the corresponding coefficient values. "
-      "<b>simulate_process</b>: input dW, dt, S0, drift, diff and coefficients; returns <b>(S_, mu_exact_, sigma_exact_)</b>. "
-      "Coefficients: r, sigm, kappa, theta, w1-w4, K, beta; K here is a population-model coefficient.")
-entry("simulation.py", "<b>simulate</b>: input callable functions mu and sigma, plus N, T, S0, seed. Returns "
-      "<b>(t, dt, S, W, mu(S), sigma(S))</b>: time grid, step, state, Brownian path, actual drift and actual diffusion.")
-entry("constant.py", "<b>mu(x, r)</b> returns constant drift r; <b>sigma(x, sigm)</b> returns constant diffusion sigm. "
-      "<b>generate_data</b>: input N, T, S0, seed, r, sigm; returns the same six outputs as simulate.")
-entry("quadratic.py", "<b>mu(x)</b> returns 0.3x<super>2</super> + 0.7x; <b>sigma(x)</b> returns 0.1x<super>2</super> + 0.5x. "
-      "<b>generate_data</b>: input N, T, S0, seed; returns the same six outputs as simulate.")
-entry("ou.py", "<b>mu(x, kappa, theta)</b> returns kappa(theta - x); <b>sigma(x, sigm)</b> returns sigm. "
-      "<b>generate_data</b>: input N, T, S0, seed, kappa, theta, sigm; returns the same six outputs as simulate.")
-entry("double_well.py", "<b>mu(x)</b> returns 0.5x - x<super>3</super>; <b>sigma(x)</b> returns 1 + 0.25x<super>2</super>. "
-      "<b>generate_data</b>: input N, T, S0, seed; returns the same six outputs as simulate.")
-entry("coarse_graining.py", "<b>coarse_grain</b>: input S_, BQ_, W_, mu_exact_, sigma_exact_, sigma_pred_, stride M and coarse count K. "
-      "Returns <b>(sigma_pred, mu_exact, S, BQ, W, sigma_exact)</b>, sampling every M-th entry.")
+entry("data_generation/simulation.py",
+      "<b>generate_noise(N, T, seed)</b> returns <b>(t, dt, dW, W)</b>: time grid, step, Brownian increments and path. "
+      "<b>simulate(mu, sigma, N, T, S0, seed)</b> takes callable coefficients and returns "
+      "<b>(t, dt, S, W, mu(S), sigma(S))</b> using Euler-Maruyama.")
+entry("data_generation/processes.py",
+      "<b>mu(x, drift, ...)</b> and <b>sigma(x, diff, ...)</b> evaluate a named process's coefficients. "
+      "<b>simulate_process(dW, dt, S0, ...)</b> accepts existing Brownian increments and returns "
+      "<b>(S_, mu_exact_, sigma_exact_)</b>. Black-Scholes uses drift='BS', diff='BS', r and sigm.")
+story.append(p("<b>generate_constant(N, T, S0, seed, r, sigm)</b>, "
+               "<b>generate_quadratic(N, T, S0, seed)</b>, and "
+               "<b>generate_ou(N, T, S0, seed, kappa, theta, sigm)</b> each return the six outputs of simulate. "
+               "Their defaults preserve the experiment seeds (31, 2 and 3 respectively)."))
+story.append(p("<b>constant_drift / constant_diffusion</b>: r and sigm. "
+               "<b>quadratic_drift / quadratic_diffusion</b>: 0.3x<super>2</super> + 0.7x and "
+               "0.1x<super>2</super> + 0.5x. <b>ou_drift / ou_diffusion</b>: kappa(theta - x) and sigm. "
+               "Each takes x, with optional coefficients where applicable."))
+entry("data_generation/coarse_graining.py",
+      "<b>coarse_grain(S_, BQ_, W_, mu_exact_, sigma_exact_, sigma_pred_, M, K)</b> returns "
+      "<b>(sigma_pred, mu_exact, S, BQ, W, sigma_exact)</b>, taking every M-th entry for K samples.")
 
-story.append(p("models/stochastic_sindy.py", "section"))
-story.append(p("<b>StochSINDy(...)</b> creates a model. Inputs set polynomial degrees (mu_deg, si_deg), penalty (pen), "
-               "cross-validation (use_cv, k, alphas, rhos, use_1se), and coefficient thresholds (thr1, thr2)."))
-story.append(p("<b>fit(X, BP, dt, alpha_mu, alpha_si)</b> returns the fitted model itself. "
-               "<b>mu(x)</b> and <b>si(x)</b> return drift and diffusion predictions at x. "
-               "<b>show()</b> prints fitted equations and errors."))
-story.append(p("<b>plot_cv(output_prefix)</b> shows cross-validation plots; <b>plot_size(count_bias, output_prefix)</b> shows model-size plots. "
-               "<b>plot_results(X, BP, BQ, W, mu_true, si_true, output_prefix)</b> compares fitted functions and noise; "
-               "true functions are optional. Plot methods return None and save PNGs where implemented (plot_cv saves for elastic net)."))
+story.append(p("Diffusion estimation", "section"))
+entry("models/diffusion.py",
+      "<b>compute_quadratic_variation(W)</b> returns the sum of squared increments. "
+      "<b>estimate_quadratic_variation(S_, t)</b> returns <b>(QV, dQV, diff_method)</b>: cumulative "
+      "variation, its time derivative and the finite-difference object.")
+story.append(p("<b>fit_diffusion_model(S_, t, dQV, ...)</b> and <b>fit_quadratic_diffusion(S_, t, dQV, ...)</b> "
+               "return fitted PySINDy variance models. Both use degree 4; only the first includes a constant term. "
+               "Optional settings are threshold, nu, max_iter and tol."))
+story.append(p("<b>diffusion_model(threshold, nu, max_iter, tol)</b> returns an unfitted variance model. "
+               "<b>fit_diffusion(S, t, dQV, thresholds, nus, max_iter, tol)</b> selects settings on the last 20% "
+               "of the path and returns <b>(model, best, results)</b>: fitted model, selected settings and trial records."))
+story.append(p("<b>diffusion_derivatives(sigma_pred_, S_, diff_method)</b> and "
+               "<b>coarse_diffusion_derivatives(sigma_pred, S, diff_method)</b> return the first, second and third "
+               "diffusion derivatives with respect to the state. Regression fits sigma<super>2</super>; "
+               "take its positive square root before computing these derivatives."))
 
 story.append(PageBreak())
-story += [p("Estimation and recovery", "title"),
-          p("models/  |  Remaining 14 files", "small"),
-          p("<b>Key distinction.</b> Diffusion regression fits sigma<super>2</super>; its positive square root gives sigma_pred. "
-            "sigma_prime, sigma_2prime and sigma_3prime are derivatives with respect to the state, not time."), Spacer(1, 6)]
-
-entry("quadratic_variation.py", "<b>compute_quadratic_variation(W)</b> returns the scalar sum of squared path increments. "
-      "<b>estimate_quadratic_variation(S_, t)</b> returns <b>(QV, dQV, diff_method)</b>: cumulative quadratic variation, its time derivative and the differentiation object.")
-entry("diffusion.py", "<b>fit_diffusion_model</b>: input S_, t, dQV and settings threshold, nu, max_iter, tol. "
-      "Returns a <b>fitted PySINDy model of sigma<super>2</super></b>, using a degree-4 polynomial library with a constant term.")
-entry("diffusion_quadratic.py", "<b>fit_quadratic_diffusion</b>: input S_, t, dQV and threshold, nu, max_iter, tol. "
-      "Returns a <b>fitted model of sigma<super>2</super></b>, using a degree-4 library without a constant term.")
-entry("diffusion_tuning.py", "<b>diffusion_model(threshold, nu, max_iter, tol)</b> returns an <b>unfitted</b> variance model. "
-      "<b>fit_diffusion(S, t, dQV, thresholds, nus, max_iter, tol)</b> returns <b>(model, best, results)</b>: fitted model, selected settings record and all search records.")
-entry("diffusion_derivatives.py / coarse_diffusion_derivatives.py", "<b>diffusion_derivatives(sigma_pred_, S_, diff_method)</b> returns "
-      "<b>(sigma_prime_, sigma_2prime_, sigma_3prime_)</b>. "
-      "<b>coarse_diffusion_derivatives(sigma_pred, S, diff_method)</b> returns the same three derivatives on the coarse grid, without trailing underscores.")
-entry("q_brownian_motion.py", "<b>recover_q_noise(S_, sigma_pred_)</b> returns <b>BQ_</b>, the fine-grid recovered Q-noise path.")
-entry("signature_regression.py", "<b>fit_signature(S_, BQ_, t, keep_cols, M)</b>: input state, Q-noise, time grid, selected signature columns and window length. "
-      "Returns <b>l21</b>, one fitted signature coefficient per window.")
-entry("drift_coefficients.py", "<b>drift_coefficients(mu_exact, sigma_pred, sigma_prime, sigma_2prime, l21)</b> returns "
-      "<b>(mu_0, a, b, b_)</b>: initial drift and coefficient arrays for Methods 1 and 2. Only mu_exact[0] is used from the actual drift.")
-entry("drift_recovery.py", "<b>recover_drift(S, a, b, b_, mu_0)</b> returns <b>(mu_pred1, mu_pred2)</b>, the drift arrays recovered by Methods 1 and 2.")
-entry("drift_recovery_from_ODE2.py", "<b>recover_drift_ode2(S, sigma_pred, sigma_prime, sigma_2prime, mu_0, lambda_0)</b> "
-      "returns <b>(mu_pred11, lamda_pred)</b>, the recovered drift and its spatial slope. mu_0 and lambda_0 supply the initial drift and initial slope.")
-entry("p_brownian_motion.py / p_brownian_motion_method2.py", "<b>recover_p_noise(BQ, mu_pred1, sigma_pred, T)</b> and "
-      "<b>recover_p_noise_method2(BQ, mu_pred2, sigma_pred, T)</b> each return <b>(BP, dt, t)</b>: recovered physical noise, coarse time step and time grid, using the respective drift estimate.")
-entry("noise_recovery.py", "<b>recover_noise(BQ, drift, diffusion, dt)</b> returns the <b>recovered physical noise path</b>. "
-      "This helper accepts the time step directly and returns only the path.")
-
-story += [Spacer(1, 5), p("<b>Using a function in an experiment</b>", "small"),
-          p('<font name="Courier" size="8.6">from models.drift_recovery import recover_drift<br/>'
-            'mu_pred1, mu_pred2 = recover_drift(S, a, b, b_, mu_0)</font>'),
-          p("Optional arguments keep the defaults defined in the source files. This reference documents the current code; it changes no computations.", "small")]
+story += [p("Drift, noise and identification", "title"),
+          p("The remaining three model modules", "small")]
+entry("models/drift.py",
+      "<b>fit_signature(S_, BQ_, t, keep_cols, M)</b> returns <b>l21</b>, one fitted signature coefficient per window. "
+      "keep_cols selects signature columns and M sets the window length.")
+story.append(p("<b>drift_coefficients(mu_exact, sigma_pred, sigma_prime, sigma_2prime, l21)</b> returns "
+               "<b>(mu_0, a, b, b_)</b>: initial drift and recovery coefficients. Only mu_exact[0] is used."))
+story.append(p("<b>recover_drift(S, a, b, b_, mu_0)</b> returns <b>(mu_pred1, mu_pred2)</b> for Methods 1 and 2. "
+               "<b>recover_drift_ode2(S, sigma_pred, sigma_prime, sigma_2prime, mu_0, lambda_0)</b> returns "
+               "<b>(mu_pred11, lamda_pred)</b>: drift and spatial slope. Supply the initial drift and slope explicitly."))
+entry("models/noise.py",
+      "<b>recover_q_noise(S_, sigma_pred_)</b> returns the fine-grid Q-noise path <b>BQ_</b>. "
+      "<b>recover_p_noise(BQ, mu_pred1, sigma_pred, T)</b> returns <b>(BP, dt, t)</b>: physical noise, coarse time step and grid.")
+story.append(p("<b>recover_p_noise_method2(BQ, mu_pred2, sigma_pred, T)</b> returns the same tuple using Method 2 drift. "
+               "<b>recover_noise(BQ, drift, diffusion, dt)</b> accepts a time step directly and returns only the physical noise path."))
+entry("models/stochastic_sindy.py",
+      "<b>StochSINDy(...)</b> creates an identifier. Inputs set polynomial degrees (mu_deg, si_deg), "
+      "penalty (pen), cross-validation (use_cv, k, alphas, rhos, use_1se), and thresholds (thr1, thr2).")
+story.append(p("<b>fit(X, BP, dt, alpha_mu, alpha_si)</b> returns the fitted model. "
+               "<b>mu(x)</b> and <b>si(x)</b> predict drift and diffusion; <b>show()</b> prints equations and errors. "
+               "<b>plot_cv(output_prefix)</b>, <b>plot_size(count_bias, output_prefix)</b> and "
+               "<b>plot_results(X, BP, BQ, W, mu_true, si_true, output_prefix, drift_title)</b> display diagnostics "
+               "and save plots where implemented."))
+story.append(p("<b>stochastic_sindy_candidates()</b> returns optional tuning configurations. "
+               "<b>tune_stochastic_sindy(X, BP, dt, train_fraction, candidates)</b> selects settings using "
+               "held-out increment error and returns <b>(tuned_model, baseline_model, selection, records)</b>. "
+               "True drift and diffusion are not inputs to selection."))
+story += [Spacer(1, 12), p("Example imports", "section"),
+          p('<font name="Courier" size="8.6">from data_generation.processes import generate_ou<br/>'
+            'from models.drift import recover_drift, recover_drift_ode2<br/>'
+            'from models.noise import recover_p_noise<br/>'
+            'from models.stochastic_sindy import StochSINDy</font>'),
+          p("Optional arguments retain their source defaults. The consolidation changes module locations; "
+            "the four experiment notebooks retain their numerical settings and formulas.", "small")]
 
 doc = SimpleDocTemplate(str(OUT), pagesize=A4, rightMargin=36, leftMargin=36,
                         topMargin=34, bottomMargin=46,

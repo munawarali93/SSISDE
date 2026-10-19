@@ -426,3 +426,6 @@ experiments/*.png
 experiments/**/*.png
 *.executed.ipynb
 .env
+
+# Local recovery archives, outside the active experiments.
+/.archive/

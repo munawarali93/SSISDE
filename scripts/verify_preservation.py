@@ -16,6 +16,7 @@ import pysindy as ps
 from sklearn import linear_model
 from sklearn.linear_model import ElasticNet, Lasso
 from sklearn.model_selection import TimeSeriesSplit
+from IPython.core.inputtransformer2 import TransformerManager
 from threadpoolctl import threadpool_limits
 from tqdm import tqdm
 
@@ -23,21 +24,17 @@ root = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(root))
 reference_commit = 'd8152dff316dcc07a2551fadb7d543387210e27a'
 
-from data_generation.parameters import generate_noise
-from data_generation.processes import simulate_process, mu, sigma
 from data_generation.coarse_graining import coarse_grain
-from models.quadratic_variation import estimate_quadratic_variation
-from models.diffusion import fit_diffusion_model
-from models.diffusion_quadratic import fit_quadratic_diffusion
-from models.diffusion_derivatives import diffusion_derivatives
-from models.coarse_diffusion_derivatives import coarse_diffusion_derivatives
-from models.q_brownian_motion import recover_q_noise
-from models.signature_regression import fit_signature
-from models.drift_coefficients import drift_coefficients
-from models.drift_recovery import recover_drift
-from models.drift_recovery_from_ODE2 import recover_drift_ode2
-from models.p_brownian_motion import recover_p_noise
-from models.p_brownian_motion_method2 import recover_p_noise_method2
+from data_generation.processes import (
+    simulate_process, generate_constant, generate_quadratic, generate_ou,
+)
+from data_generation.simulation import generate_noise
+from models.diffusion import (
+    estimate_quadratic_variation, fit_diffusion_model, fit_quadratic_diffusion,
+    diffusion_derivatives, coarse_diffusion_derivatives,
+)
+from models.drift import fit_signature, drift_coefficients, recover_drift, recover_drift_ode2
+from models.noise import recover_q_noise, recover_p_noise, recover_p_noise_method2
 from models.stochastic_sindy import StochSINDy
 
 
@@ -74,7 +71,7 @@ def check_case(case):
         run_reference('data_generation/simulation.py', old)
         code = reference(f'data_generation/{case}.py')
         exec(code.replace('from data_generation.simulation import simulate', ''), old)
-        actual = importlib.import_module(f'data_generation.{case}').generate_data()
+        actual = {'constant': generate_constant, 'quadratic': generate_quadratic, 'ou': generate_ou}[case]()
     for value, key in zip(actual, ['t', 'dt', 'S_', 'W_', 'mu_exact_', 'sigma_exact_']):
         equal(value, old[key])
 
@@ -165,7 +162,13 @@ def check_regression():
         run_reference(f'models/{name}.py', old)
         new = function(old['S_'], old['t'], old['dQV'])
         equal(new.coefficients(), old['model'].coefficients())
-    assert (root/'models/diffusion_tuning.py').read_text() == reference('models/diffusion_tuning.py')
+    # Tuning functions moved into diffusion.py; compare their definitions.
+    current = ast.parse((root/'models/diffusion.py').read_text())
+    original = ast.parse(reference('models/diffusion_tuning.py'))
+    functions = {n.name: ast.dump(n) for n in current.body if isinstance(n, ast.FunctionDef)}
+    for node in original.body:
+        if isinstance(node, ast.FunctionDef):
+            assert functions[node.name] == ast.dump(node)
     run_reference('models/stochastic_sindy.py', old)
     t, dt, dW, W = generate_noise(401, 1, 7)
     X, _, _ = simulate_process(dW, dt, 1)
@@ -185,11 +188,25 @@ def check_modules():
         for path in (root/folder).glob('*.py'):
             tree = ast.parse(path.read_text())
             assert all(isinstance(n, (ast.Import, ast.ImportFrom, ast.FunctionDef, ast.ClassDef))
-                       for n in tree.body), f'Import-time computation: {path}'
+                       or (i == 0 and isinstance(n, ast.Expr)
+                           and isinstance(n.value, ast.Constant) and isinstance(n.value.value, str))
+                       for i, n in enumerate(tree.body)), f'Import-time computation: {path}'
     for path in (root/'experiments').rglob('*.ipynb'):
         cells = json.loads(path.read_text())['cells']
         assert not any('%run' in ''.join(c['source']) for c in cells if c['cell_type'] == 'code')
-    print('PASS: importable modules and notebooks without %run.', flush=True)
+        for cell in cells:
+            if cell['cell_type'] != 'code':
+                continue
+            source = TransformerManager().transform_cell(''.join(cell['source']))
+            tree = ast.parse(source, filename=str(path))
+            for node in ast.walk(tree):
+                if isinstance(node, ast.ImportFrom) and node.module and node.module.startswith(
+                    ('data_generation.', 'models.')
+                ):
+                    module = importlib.import_module(node.module)
+                    for alias in node.names:
+                        assert hasattr(module, alias.name), (path, node.module, alias.name)
+    print('PASS: importable modules, valid notebook imports, and notebooks without %run.', flush=True)
 
 
 if __name__ == '__main__':
@@ -197,6 +214,6 @@ if __name__ == '__main__':
         warnings.simplefilter('ignore', DeprecationWarning)
         check_modules()
         check_ode2()
-        for case in ['black_scholes', 'constant', 'quadratic', 'ou', 'double_well']:
+        for case in ['black_scholes', 'constant', 'quadratic', 'ou']:
             check_case(case)
         check_regression()
