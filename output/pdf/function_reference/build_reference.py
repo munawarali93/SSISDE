@@ -100,10 +100,9 @@ story.append(p("<b>fit(X, BP, dt, alpha_mu, alpha_si)</b> returns the fitted mod
                "<b>plot_cv(output_prefix)</b>, <b>plot_size(count_bias, output_prefix)</b> and "
                "<b>plot_results(X, BP, BQ, W, mu_true, si_true, output_prefix, drift_title)</b> display diagnostics "
                "and save plots where implemented."))
-story.append(p("<b>stochastic_sindy_candidates()</b> returns optional tuning configurations. "
-               "<b>tune_stochastic_sindy(X, BP, dt, train_fraction, candidates)</b> selects settings using "
-               "held-out increment error and returns <b>(tuned_model, baseline_model, selection, records)</b>. "
-               "True drift and diffusion are not inputs to selection."))
+story.append(p("The double-well outer search over model configurations has been removed. "
+               "StochSINDy retains its original within-model cross-validation for alpha and rho. "
+               "<b>show(decimals=4)</b> rounds printed results only; fitted coefficients retain full precision."))
 story += [Spacer(1, 12), p("Example imports", "section"),
           p('<font name="Courier" size="8.6">from data_generation.processes import generate_ou<br/>'
             'from models.drift import recover_drift, recover_drift_ode2<br/>'

@@ -4,6 +4,12 @@ Recover drift, diffusion, and Brownian noise from simulated stochastic processes
 then fit a Stochastic SINDy model. Each experiment compares three drift-recovery
 methods: **Method 1, Method 2, and ODE2**.
 
+The double-well outer search over polynomial degrees and regression types has
+been removed. The active experiments use the original StochSINDy cross-validation
+for alpha and rho. Constant coefficients uses its original rho grid
+`[0.7, 0.85, 0.95, 1.0]`; the other experiments use
+`[0.3, 0.4, 0.5, 0.7, 0.85, 0.95, 1.0]`.
+
 ## Experiments
 
 | Experiment | Notebook |
@@ -55,7 +61,9 @@ done
 - **Recovered model tables:** [PDF](output/pdf/recovered_models/SSISDE_recovered_models.pdf)
   and [LaTeX source](output/pdf/recovered_models/SSISDE_recovered_models.tex)
   list the fitted drift, diffusion, alpha, and rho for all 12 experiment/method
-  combinations. Regenerate the source with
+  combinations, rounded to four decimal places. Full-precision coefficients and
+  parameters are retained in the JSON results; rounding only changes their
+  display. Regenerate the source with
   `python output/pdf/recovered_models/build_tables.py`, then compile it with
   `pdflatex`.
 
@@ -74,7 +82,7 @@ models/
   diffusion.py        Quadratic variation, diffusion fitting, and derivatives
   drift.py            Signature regression and drift recovery
   noise.py            Q-noise and physical Brownian-motion recovery
-  stochastic_sindy.py Model fitting, tuning, and plots
+  stochastic_sindy.py Model fitting, cross-validation, and plots
 ```
 
 `experiments/` contains the four experiment folders; `original/` contains the
