@@ -47,6 +47,8 @@ done
 ```
 
 - **Plots:** saved beside each notebook in `experiments/<case>/`.
+- **Drift plots:** `drift_comparison.png` compares Method 1, Method 2, and ODE2;
+  separate Euler and ODE2 drift figures are not generated.
 - **Results and executed notebooks:** saved in `outputs/<case>/`.
 - **Method comparison:** `ssisde_comparison.json` reports noise, drift, and
   diffusion RMSE for all three methods.
@@ -83,8 +85,9 @@ python scripts/verify_preservation.py
 This checks numerical preservation against Git commit `d8152df` and tests ODE2
 against known solutions. The checkout must include that commit's history.
 All four experiments passed a full local rerun on **2026-10-20**, using 100,000
-samples and cross-validation. The 53 saved figures come from those runs; 12
-obsolete figures from earlier workflows were removed.
+samples and cross-validation. The 49 saved figures come from those runs; 12
+obsolete figures from earlier workflows and four redundant standalone Euler/ODE2
+drift figures were removed.
 
 ## Colab
 
