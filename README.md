@@ -52,6 +52,12 @@ done
 - **Results and executed notebooks:** saved in `outputs/<case>/`.
 - **Method comparison:** `ssisde_comparison.json` reports noise, drift, and
   diffusion RMSE for all three methods.
+- **Recovered model tables:** [PDF](output/pdf/recovered_models/SSISDE_recovered_models.pdf)
+  and [LaTeX source](output/pdf/recovered_models/SSISDE_recovered_models.tex)
+  list the fitted drift, diffusion, alpha, and rho for all 12 experiment/method
+  combinations. Regenerate the source with
+  `python output/pdf/recovered_models/build_tables.py`, then compile it with
+  `pdflatex`.
 
 Current figures and numerical results are tracked in Git with the source
 notebooks. Duplicate executed notebooks, caches, logs, and retired tuning

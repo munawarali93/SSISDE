@@ -1,0 +1,85 @@
+\documentclass[10pt,a4paper,landscape]{article}
+\usepackage[margin=14mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath}
+\usepackage{booktabs,array}
+\usepackage[table]{xcolor}
+\usepackage{hyperref}
+\hypersetup{pdftitle={SSISDE: recovered drift and diffusion models},
+  pdfauthor={SSISDE},hidelinks}
+\definecolor{ink}{HTML}{16334A}
+\definecolor{groupbg}{HTML}{EDF2F6}
+\definecolor{muted}{HTML}{465565}
+\setlength{\parindent}{0pt}
+\setlength{\tabcolsep}{7pt}
+\renewcommand{\arraystretch}{1.15}
+\pagestyle{empty}
+\begin{document}
+{\color{ink}\LARGE\bfseries Recovered drift and diffusion models}\par
+\vspace{3pt}
+{\color{muted}SSISDE experiment results \hfill 20 October 2026}\par
+\vspace{8pt}
+Final Stochastic SINDy fits using noise recovered from each drift method:
+\quad $dX_t=\widehat{\mu}(X_t)\,dt+\widehat{\sigma}(X_t)\,dW_t$.
+\par\vspace{8pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} l l l c c @{}}
+\toprule
+\textbf{Method} & \textbf{Recovered drift $\widehat{\mu}(x)$}
+& \textbf{Recovered diffusion $\widehat{\sigma}(x)$}
+& \textbf{$\alpha$} & \textbf{$\rho$} \\
+\midrule
+\rowcolor{groupbg}
+\multicolumn{5}{l}{\strut\textbf{Black--Scholes}} \\[2pt]
+% black_scholes / Method 1: alpha=0.0003874675120456132, rho=0.85
+Method 1 & $0.503773\,x$ & $0.00323797 + 0.295761\,x$ & $3.8746751\times 10^{-4}$ & $0.85$ \\[4pt]
+% black_scholes / Method 2: alpha=0.0003874675120456132, rho=0.85
+Method 2 & $0.501688\,x$ & $0.00318241 + 0.295818\,x$ & $3.8746751\times 10^{-4}$ & $0.85$ \\[4pt]
+% black_scholes / ODE2: alpha=0.0003874675120456132, rho=0.85
+ODE2 & $0.501855\,x$ & $0.00318859 + 0.295811\,x$ & $3.8746751\times 10^{-4}$ & $0.85$ \\[4pt]
+\addlinespace[5pt]
+\rowcolor{groupbg}
+\multicolumn{5}{l}{\strut\textbf{Constant coefficients}} \\[2pt]
+% constant / Method 1: alpha=0.00017190722018585745, rho=0.3
+Method 1 & $0.499733 + 0.000265495\,x$ & $1.0002 - 7.42992\times 10^{-8}\,x$ & $1.7190722\times 10^{-4}$ & $0.3$ \\[4pt]
+% constant / Method 2: alpha=0.0013111339374215643, rho=0.3
+Method 2 & $0.5$ & $1.0002$ & $1.3111339\times 10^{-3}$ & $0.3$ \\[4pt]
+% constant / ODE2: alpha=0.0013111339374215643, rho=0.3
+ODE2 & $0.5$ & $1.0002$ & $1.3111339\times 10^{-3}$ & $0.3$ \\[4pt]
+\addlinespace[5pt]
+\rowcolor{groupbg}
+\multicolumn{5}{l}{\strut\textbf{Quadratic coefficients}} \\[2pt]
+% quadratic / Method 1: alpha=0.0008733261623828437, rho=0.5
+Method 1 & $0.620512\,x + 0.35905\,x^{2}$ & $-0.0177782 + 0.535985\,x + 0.0842435\,x^{2}$ & $8.7332616\times 10^{-4}$ & $0.5$ \\[4pt]
+% quadratic / Method 2: alpha=0.0008733261623828437, rho=0.4
+Method 2 & $1.02213\,x$ & $-0.0199718 + 0.540087\,x + 0.0823874\,x^{2}$ & $8.7332616\times 10^{-4}$ & $0.4$ \\[4pt]
+% quadratic / ODE2: alpha=0.0008733261623828437, rho=0.4
+ODE2 & $0.427313\,x + 0.450974\,x^{2}$ & $-0.0201858 + 0.540204\,x + 0.0824996\,x^{2}$ & $8.7332616\times 10^{-4}$ & $0.4$ \\[4pt]
+\addlinespace[5pt]
+\rowcolor{groupbg}
+\multicolumn{5}{l}{\strut\textbf{Ornstein--Uhlenbeck}} \\[2pt]
+% ou / Method 1: alpha=0.0008733261623828437, rho=0.4
+Method 1 & $-0.500311 + 0.000313962\,x$ & $0.299011 - 1.72317\times 10^{-7}\,x$ & $8.7332616\times 10^{-4}$ & $0.4$ \\[4pt]
+% ou / Method 2: alpha=0.0008733261623828437, rho=0.4
+Method 2 & $-0.5$ & $0.29901$ & $8.7332616\times 10^{-4}$ & $0.4$ \\[4pt]
+% ou / ODE2: alpha=0.00017190722018585745, rho=0.4
+ODE2 & $-0.5\,x + 1.4265\times 10^{-7}\,x^{2}$ & $0.29901 + 5.9507\times 10^{-10}\,x$ & $1.7190722\times 10^{-4}$ & $0.4$ \\[4pt]
+\bottomrule
+\end{tabular*}
+\par\vspace{9pt}
+{\small
+\textbf{Parameters.} $\alpha$ is the ElasticNet regularization strength;
+$\rho$ is its L1 mixing ratio. Each pair applies to the joint drift--diffusion
+fit and was selected by seven-fold cross-validation with the one-standard-error
+rule. All four experiments used 100,000 simulated samples.\par
+\vspace{4pt}
+\textbf{Precision.} Polynomial coefficients retain the precision stored in the
+experiment results, including small nonzero terms. $\alpha$ is displayed to
+eight significant digits; its full stored value appears in the LaTeX source
+comments. $\widehat{\sigma}$ is the diffusion amplitude, not its square.\par
+\vspace{4pt}
+\textbf{Source.} \texttt{outputs/<case>/ssisde\_comparison.json},
+where \texttt{<case>} is \texttt{black\_scholes}, \texttt{constant},
+\texttt{quadratic}, or \texttt{ou}.
+}
+\end{document}
