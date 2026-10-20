@@ -29,6 +29,7 @@ def report(cell, cell_index, **kwargs):
 client = NotebookClient(
     notebook,
     timeout=3600,
+    startup_timeout=300,
     kernel_name='python3',
     resources={'metadata': {'path': str(path.parent)}},
     on_cell_start=report,

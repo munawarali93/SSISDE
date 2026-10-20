@@ -38,10 +38,22 @@ Replace the notebook path to run another experiment. Add `--in-place` to save
 fresh outputs in the source notebook. Default runs use 100,000 samples and
 cross-validation, so they can take time.
 
+To refresh all four experiment notebooks:
+
+```bash
+for notebook in experiments/*/*.ipynb; do
+  python scripts/run_experiment.py "$notebook" --in-place || break
+done
+```
+
 - **Plots:** saved beside each notebook in `experiments/<case>/`.
 - **Results and executed notebooks:** saved in `outputs/<case>/`.
 - **Method comparison:** `ssisde_comparison.json` reports noise, drift, and
   diffusion RMSE for all three methods.
+
+Current figures and numerical results are tracked in Git with the source
+notebooks. Duplicate executed notebooks, caches, logs, and retired tuning
+artifacts remain local.
 
 ## Code structure
 
@@ -70,7 +82,9 @@ python scripts/verify_preservation.py
 
 This checks numerical preservation against Git commit `d8152df` and tests ODE2
 against known solutions. The checkout must include that commit's history.
-All four experiments passed full local execution after the module consolidation.
+All four experiments passed a full local rerun on **2026-10-20**, using 100,000
+samples and cross-validation. The 53 saved figures come from those runs; 12
+obsolete figures from earlier workflows were removed.
 
 ## Colab
 

@@ -422,10 +422,26 @@ FodyWeavers.xsd
 .ipynb_checkpoints/
 .DS_Store
 outputs/
-experiments/*.png
-experiments/**/*.png
 *.executed.ipynb
 .env
+
+# Publish the numerical results produced by the four current experiments.
+# Keep execution copies, caches, logs, and retired tuning artifacts local.
+!outputs/
+outputs/*
+!outputs/black_scholes/
+!outputs/constant/
+!outputs/quadratic/
+!outputs/ou/
+outputs/*/*
+!outputs/*/ssisde_comparison.json
+!outputs/*/ssisde_comparison_paths.npz
+!outputs/constant/diffusion_tuning.json
+!outputs/constant/results.json
+!outputs/quadratic/results.json
+!outputs/ou/diffusion_tuning.json
+!outputs/ou/results.json
+!outputs/ou/paths.npz
 
 # Local recovery archives, outside the active experiments.
 /.archive/

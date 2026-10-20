@@ -1,0 +1,83 @@
+[
+  {
+    "threshold": 1.0,
+    "nu": 0.1,
+    "validation_mse": 1.606156036487837,
+    "max_iter": 10000,
+    "tol": 1e-08,
+    "terms": 1,
+    "converged": true
+  },
+  {
+    "threshold": 1.0,
+    "nu": 0.2,
+    "validation_mse": 1.606156036487837,
+    "max_iter": 10000,
+    "tol": 1e-08,
+    "terms": 1,
+    "converged": true
+  },
+  {
+    "threshold": 1.0,
+    "nu": 0.5,
+    "validation_mse": 1.606156036487837,
+    "max_iter": 10000,
+    "tol": 1e-08,
+    "terms": 1,
+    "converged": true
+  },
+  {
+    "threshold": 3.1,
+    "nu": 0.1,
+    "validation_mse": 1.606156036487837,
+    "max_iter": 10000,
+    "tol": 1e-08,
+    "terms": 1,
+    "converged": true
+  },
+  {
+    "threshold": 3.1,
+    "nu": 0.2,
+    "validation_mse": 1.606156036487837,
+    "max_iter": 10000,
+    "tol": 1e-08,
+    "terms": 1,
+    "converged": true
+  },
+  {
+    "threshold": 3.1,
+    "nu": 0.5,
+    "validation_mse": 1.606156036487837,
+    "max_iter": 10000,
+    "tol": 1e-08,
+    "terms": 1,
+    "converged": true
+  },
+  {
+    "threshold": 5.0,
+    "nu": 0.1,
+    "validation_mse": 1.606156036487837,
+    "max_iter": 10000,
+    "tol": 1e-08,
+    "terms": 1,
+    "converged": true
+  },
+  {
+    "threshold": 5.0,
+    "nu": 0.2,
+    "validation_mse": 1.606156036487837,
+    "max_iter": 10000,
+    "tol": 1e-08,
+    "terms": 1,
+    "converged": true
+  },
+  {
+    "threshold": 5.0,
+    "nu": 0.5,
+    "validation_mse": 1.606156036487837,
+    "max_iter": 10000,
+    "tol": 1e-08,
+    "terms": 1,
+    "converged": true
+  }
+]

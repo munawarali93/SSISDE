@@ -1,0 +1,110 @@
+[
+  {
+    "threshold": 0.1,
+    "nu": 0.1,
+    "validation_mse": 0.013210960133907384,
+    "max_iter": 10000,
+    "tol": 1e-08,
+    "terms": 1,
+    "converged": true
+  },
+  {
+    "threshold": 0.1,
+    "nu": 0.5,
+    "validation_mse": 0.013210960133907384,
+    "max_iter": 10000,
+    "tol": 1e-08,
+    "terms": 1,
+    "converged": true
+  },
+  {
+    "threshold": 0.1,
+    "nu": 2.0,
+    "validation_mse": 0.013212095297788815,
+    "max_iter": 10000,
+    "tol": 1e-08,
+    "terms": 2,
+    "converged": true
+  },
+  {
+    "threshold": 0.3,
+    "nu": 0.1,
+    "validation_mse": 0.013210960133907384,
+    "max_iter": 10000,
+    "tol": 1e-08,
+    "terms": 1,
+    "converged": true
+  },
+  {
+    "threshold": 0.3,
+    "nu": 0.5,
+    "validation_mse": 0.013210960133907384,
+    "max_iter": 10000,
+    "tol": 1e-08,
+    "terms": 1,
+    "converged": true
+  },
+  {
+    "threshold": 0.3,
+    "nu": 2.0,
+    "validation_mse": 0.013210960133907384,
+    "max_iter": 10000,
+    "tol": 1e-08,
+    "terms": 1,
+    "converged": true
+  },
+  {
+    "threshold": 1.0,
+    "nu": 0.1,
+    "validation_mse": 0.013210960133907384,
+    "max_iter": 10000,
+    "tol": 1e-08,
+    "terms": 1,
+    "converged": true
+  },
+  {
+    "threshold": 1.0,
+    "nu": 0.5,
+    "validation_mse": 0.013210960133907384,
+    "max_iter": 10000,
+    "tol": 1e-08,
+    "terms": 1,
+    "converged": true
+  },
+  {
+    "threshold": 1.0,
+    "nu": 2.0,
+    "validation_mse": 0.013210960133907384,
+    "max_iter": 10000,
+    "tol": 1e-08,
+    "terms": 1,
+    "converged": true
+  },
+  {
+    "threshold": 3.0,
+    "nu": 0.1,
+    "validation_mse": null,
+    "max_iter": 10000,
+    "tol": 1e-08,
+    "terms": 0,
+    "converged": true
+  },
+  {
+    "threshold": 3.0,
+    "nu": 0.5,
+    "validation_mse": 0.013210960133907384,
+    "max_iter": 10000,
+    "tol": 1e-08,
+    "terms": 1,
+    "converged": true
+  },
+  {
+    "threshold": 3.0,
+    "nu": 2.0,
+    "validation_mse": 0.013210960133907384,
+    "max_iter": 10000,
+    "tol": 1e-08,
+    "terms": 1,
+    "converged": true
+  }
+]
