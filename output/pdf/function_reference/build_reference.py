@@ -102,14 +102,17 @@ story.append(p("<b>fit(X, BP, dt, alpha_mu, alpha_si)</b> returns the fitted mod
                "and save plots where implemented."))
 story.append(p("The double-well outer search over model configurations has been removed. "
                "StochSINDy retains its original within-model cross-validation for alpha and rho. "
-               "<b>show(decimals=4)</b> rounds printed results only; fitted coefficients retain full precision."))
+               "After selection and refitting, <b>fit()</b> rounds final coefficients to five decimal places. "
+               "Predictions, plots, and errors use those rounded coefficients. "
+               "<b>mu_c_unrounded</b>, <b>si_c_unrounded</b>, and <b>mse_unrounded</b> preserve the original fit. "
+               "<b>show(decimals=5)</b> controls printed precision."))
 story += [Spacer(1, 12), p("Example imports", "section"),
           p('<font name="Courier" size="8.6">from data_generation.processes import generate_ou<br/>'
             'from models.drift import recover_drift, recover_drift_ode2<br/>'
             'from models.noise import recover_p_noise<br/>'
             'from models.stochastic_sindy import StochSINDy</font>'),
-          p("Optional arguments retain their source defaults. The consolidation changes module locations; "
-            "the four experiment notebooks retain their numerical settings and formulas.", "small")]
+          p("Simulation, drift/noise recovery, and model selection keep full precision. "
+            "Only the final recovered polynomial coefficients are rounded.", "small")]
 
 doc = SimpleDocTemplate(str(OUT), pagesize=A4, rightMargin=36, leftMargin=36,
                         topMargin=34, bottomMargin=46,

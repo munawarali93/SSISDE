@@ -2,12 +2,28 @@
   "Method 1": {
     "input_drift_rmse": 0.0003487551655839145,
     "noise_rmse": 0.003205092253936284,
-    "drift_rmse": 0.0003476816523842603,
-    "diffusion_rmse": 0.00019641709689333095,
-    "increment_mse": 6.957167612940256e-16,
-    "mu": "0.499733 + 0.000265338*X",
-    "sigma": "1.0002",
+    "drift_rmse": 0.00035521397107509404,
+    "diffusion_rmse": 0.00019999999999997795,
+    "increment_mse": 1.4486996412095842e-14,
+    "mu": "0.49973 + 0.00027*X",
+    "sigma": "1.00020",
     "mu_coefficients": [
+      0.49973,
+      0.00027,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "sigma_coefficients": [
+      1.0002,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "mu_coefficients_unrounded": [
       0.49973314514086886,
       0.00026533811305738,
       0.0,
@@ -15,7 +31,7 @@
       0.0,
       0.0
     ],
-    "sigma_coefficients": [
+    "sigma_coefficients_unrounded": [
       1.0001964170968933,
       0.0,
       0.0,
@@ -23,18 +39,36 @@
       0.0,
       0.0
     ],
+    "coefficient_decimals": 5,
+    "increment_mse_unrounded": 6.957167612940256e-16,
     "alpha": 7.626985859023451e-05,
     "rho": 0.7
   },
   "Method 2": {
     "input_drift_rmse": 0.0,
     "noise_rmse": 0.0031907304789511232,
-    "drift_rmse": 1.354472090042691e-14,
-    "diffusion_rmse": 0.00019643527245727377,
-    "increment_mse": 3.208196703155479e-31,
-    "mu": "0.5",
-    "sigma": "1.0002",
+    "drift_rmse": 0.0,
+    "diffusion_rmse": 0.00019999999999997795,
+    "increment_mse": 1.3564257286519339e-14,
+    "mu": "0.50000",
+    "sigma": "1.00020",
     "mu_coefficients": [
+      0.5,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "sigma_coefficients": [
+      1.0002,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "mu_coefficients_unrounded": [
       0.5000000000000135,
       0.0,
       0.0,
@@ -42,7 +76,7 @@
       0.0,
       0.0
     ],
-    "sigma_coefficients": [
+    "sigma_coefficients_unrounded": [
       1.0001964352724573,
       0.0,
       0.0,
@@ -50,19 +84,21 @@
       0.0,
       0.0
     ],
+    "coefficient_decimals": 5,
+    "increment_mse_unrounded": 3.208196703155479e-31,
     "alpha": 0.0005817091329374358,
     "rho": 0.85
   },
   "ODE2": {
     "input_drift_rmse": 2.9694578013602283e-10,
     "noise_rmse": 0.003190730476094031,
-    "drift_rmse": 6.097022886564218e-11,
-    "diffusion_rmse": 0.00019643527242196868,
-    "increment_mse": 8.452810848139297e-26,
-    "mu": "0.5",
-    "sigma": "1.0002",
+    "drift_rmse": 0.0,
+    "diffusion_rmse": 0.00019999999999997795,
+    "increment_mse": 1.356425698631325e-14,
+    "mu": "0.50000",
+    "sigma": "1.00020",
     "mu_coefficients": [
-      0.5000000000609702,
+      0.5,
       0.0,
       0.0,
       0.0,
@@ -70,6 +106,22 @@
       0.0
     ],
     "sigma_coefficients": [
+      1.0002,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "mu_coefficients_unrounded": [
+      0.5000000000609702,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "sigma_coefficients_unrounded": [
       1.000196435272422,
       0.0,
       0.0,
@@ -77,6 +129,8 @@
       0.0,
       0.0
     ],
+    "coefficient_decimals": 5,
+    "increment_mse_unrounded": 8.452810848139297e-26,
     "alpha": 0.0005817091329374358,
     "rho": 0.85
   }

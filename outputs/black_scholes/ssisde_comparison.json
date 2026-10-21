@@ -2,12 +2,28 @@
   "Method 1": {
     "input_drift_rmse": 0.006004412051207135,
     "noise_rmse": 0.0052045378524514605,
-    "drift_rmse": 0.0039754518300392045,
-    "diffusion_rmse": 0.001358523382405537,
-    "increment_mse": 5.243520131542132e-09,
-    "mu": "0.503773*X",
-    "sigma": "0.00323797 + 0.295761*X",
+    "drift_rmse": 0.0039718102256726525,
+    "diffusion_rmse": 0.0013575830401890054,
+    "increment_mse": 5.2435215580104255e-09,
+    "mu": "0.50377*X",
+    "sigma": "0.00324 + 0.29576*X",
     "mu_coefficients": [
+      0.0,
+      0.50377,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "sigma_coefficients": [
+      0.00324,
+      0.29576,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "mu_coefficients_unrounded": [
       0.0,
       0.5037734565721125,
       0.0,
@@ -15,7 +31,7 @@
       0.0,
       0.0
     ],
-    "sigma_coefficients": [
+    "sigma_coefficients_unrounded": [
       0.003237965681493299,
       0.2957608358385373,
       0.0,
@@ -23,18 +39,36 @@
       0.0,
       0.0
     ],
+    "coefficient_decimals": 5,
+    "increment_mse_unrounded": 5.243520131542132e-09,
     "alpha": 0.0003874675120456132,
     "rho": 0.85
   },
   "Method 2": {
     "input_drift_rmse": 0.0006549087721849813,
     "noise_rmse": 0.003932904181056801,
-    "drift_rmse": 0.0017785393678928982,
-    "diffusion_rmse": 0.001350753834991113,
-    "increment_mse": 5.191695453763027e-09,
-    "mu": "0.501688*X",
-    "sigma": "0.00318241 + 0.295818*X",
+    "drift_rmse": 0.001780466652887685,
+    "diffusion_rmse": 0.0013506370259223717,
+    "increment_mse": 5.1916955916641776e-09,
+    "mu": "0.50169*X",
+    "sigma": "0.00318 + 0.29582*X",
     "mu_coefficients": [
+      0.0,
+      0.50169,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "sigma_coefficients": [
+      0.00318,
+      0.29582,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "mu_coefficients_unrounded": [
       0.0,
       0.5016881706415922,
       0.0,
@@ -42,7 +76,7 @@
       0.0,
       0.0
     ],
-    "sigma_coefficients": [
+    "sigma_coefficients_unrounded": [
       0.0031824137860203853,
       0.29581775085215295,
       0.0,
@@ -50,18 +84,36 @@
       0.0,
       0.0
     ],
+    "coefficient_decimals": 5,
+    "increment_mse_unrounded": 5.191695453763027e-09,
     "alpha": 0.0003874675120456132,
     "rho": 0.85
   },
   "ODE2": {
     "input_drift_rmse": 3.4205215500995354e-06,
     "noise_rmse": 0.0036722568008205527,
-    "drift_rmse": 0.001954642390400131,
-    "diffusion_rmse": 0.001351683710529638,
-    "increment_mse": 5.193751818293147e-09,
-    "mu": "0.501855*X",
-    "sigma": "0.00318859 + 0.295811*X",
+    "drift_rmse": 0.0019595668487402966,
+    "diffusion_rmse": 0.0013517920990108385,
+    "increment_mse": 5.193751892323892e-09,
+    "mu": "0.50186*X",
+    "sigma": "0.00319 + 0.29581*X",
     "mu_coefficients": [
+      0.0,
+      0.50186,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "sigma_coefficients": [
+      0.00319,
+      0.29581,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "mu_coefficients_unrounded": [
       0.0,
       0.5018553257565473,
       0.0,
@@ -69,7 +121,7 @@
       0.0,
       0.0
     ],
-    "sigma_coefficients": [
+    "sigma_coefficients_unrounded": [
       0.00318858669172983,
       0.2958113574479921,
       0.0,
@@ -77,6 +129,8 @@
       0.0,
       0.0
     ],
+    "coefficient_decimals": 5,
+    "increment_mse_unrounded": 5.193751818293147e-09,
     "alpha": 0.0003874675120456132,
     "rho": 0.85
   }

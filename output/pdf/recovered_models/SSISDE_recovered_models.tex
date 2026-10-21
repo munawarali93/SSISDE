@@ -6,7 +6,7 @@
 \usepackage{booktabs,array}
 \usepackage[table]{xcolor}
 \usepackage{hyperref}
-\hypersetup{pdftitle={SSISDE: recovered drift and diffusion models},
+\hypersetup{pdftitle={SSISDE: exact and recovered drift and diffusion},
   pdfauthor={SSISDE},hidelinks}
 \definecolor{ink}{HTML}{16334A}
 \definecolor{groupbg}{HTML}{EDF2F6}
@@ -16,9 +16,9 @@
 \renewcommand{\arraystretch}{1.15}
 \pagestyle{empty}
 \begin{document}
-{\color{ink}\LARGE\bfseries Recovered drift and diffusion models}\par
+{\color{ink}\LARGE\bfseries Exact and recovered drift and diffusion}\par
 \vspace{3pt}
-{\color{muted}SSISDE experiment results \hfill 20 October 2026}\par
+{\color{muted}SSISDE experiment results \hfill 21 October 2026}\par
 \vspace{8pt}
 Final Stochastic SINDy fits using noise recovered from each drift method:
 \quad $dX_t=\widehat{\mu}(X_t)\,dt+\widehat{\sigma}(X_t)\,dW_t$.
@@ -30,40 +30,40 @@ Final Stochastic SINDy fits using noise recovered from each drift method:
 & \textbf{$\alpha$} & \textbf{$\rho$} \\
 \midrule
 \rowcolor{groupbg}
-\multicolumn{5}{l}{\strut\textbf{Black--Scholes}} \\[2pt]
+\multicolumn{5}{l}{\strut\textbf{Black--Scholes}\quad Exact: $\mu(x)=0.50000\,x$;\quad $\sigma(x)=0.30000\,x$} \\[2pt]
 % black_scholes / Method 1: alpha=0.0003874675120456132, rho=0.85
-Method 1 & $0.5038\,x$ & $0.0032 + 0.2958\,x$ & $0.0004$ & $0.8500$ \\[4pt]
+Method 1 & $0.50377\,x$ & $0.00324 + 0.29576\,x$ & $0.00039$ & $0.85000$ \\[4pt]
 % black_scholes / Method 2: alpha=0.0003874675120456132, rho=0.85
-Method 2 & $0.5017\,x$ & $0.0032 + 0.2958\,x$ & $0.0004$ & $0.8500$ \\[4pt]
+Method 2 & $0.50169\,x$ & $0.00318 + 0.29582\,x$ & $0.00039$ & $0.85000$ \\[4pt]
 % black_scholes / ODE2: alpha=0.0003874675120456132, rho=0.85
-ODE2 & $0.5019\,x$ & $0.0032 + 0.2958\,x$ & $0.0004$ & $0.8500$ \\[4pt]
+ODE2 & $0.50186\,x$ & $0.00319 + 0.29581\,x$ & $0.00039$ & $0.85000$ \\[4pt]
 \addlinespace[5pt]
 \rowcolor{groupbg}
-\multicolumn{5}{l}{\strut\textbf{Constant coefficients}} \\[2pt]
+\multicolumn{5}{l}{\strut\textbf{Constant coefficients}\quad Exact: $\mu(x)=0.50000$;\quad $\sigma(x)=1.00000$} \\[2pt]
 % constant / Method 1: alpha=0.00007626985859023451, rho=0.7
-Method 1 & $0.4997 + 0.0003\,x$ & $1.0002$ & $0.0001$ & $0.7000$ \\[4pt]
+Method 1 & $0.49973 + 0.00027\,x$ & $1.00020$ & $0.00008$ & $0.70000$ \\[4pt]
 % constant / Method 2: alpha=0.0005817091329374358, rho=0.85
-Method 2 & $0.5000$ & $1.0002$ & $0.0006$ & $0.8500$ \\[4pt]
+Method 2 & $0.50000$ & $1.00020$ & $0.00058$ & $0.85000$ \\[4pt]
 % constant / ODE2: alpha=0.0005817091329374358, rho=0.85
-ODE2 & $0.5000$ & $1.0002$ & $0.0006$ & $0.8500$ \\[4pt]
+ODE2 & $0.50000$ & $1.00020$ & $0.00058$ & $0.85000$ \\[4pt]
 \addlinespace[5pt]
 \rowcolor{groupbg}
-\multicolumn{5}{l}{\strut\textbf{Quadratic coefficients}} \\[2pt]
+\multicolumn{5}{l}{\strut\textbf{Quadratic coefficients}\quad Exact: $\mu(x)=0.70000\,x + 0.30000\,x^{2}$;\quad $\sigma(x)=0.50000\,x + 0.10000\,x^{2}$} \\[2pt]
 % quadratic / Method 1: alpha=0.0008733261623828437, rho=0.5
-Method 1 & $0.6205\,x + 0.3590\,x^{2}$ & $-0.0178 + 0.5360\,x + 0.0842\,x^{2}$ & $0.0009$ & $0.5000$ \\[4pt]
+Method 1 & $0.62051\,x + 0.35905\,x^{2}$ & $-0.01778 + 0.53598\,x + 0.08424\,x^{2}$ & $0.00087$ & $0.50000$ \\[4pt]
 % quadratic / Method 2: alpha=0.0008733261623828437, rho=0.4
-Method 2 & $1.0221\,x$ & $-0.0200 + 0.5401\,x + 0.0824\,x^{2}$ & $0.0009$ & $0.4000$ \\[4pt]
+Method 2 & $1.02213\,x$ & $-0.01997 + 0.54009\,x + 0.08239\,x^{2}$ & $0.00087$ & $0.40000$ \\[4pt]
 % quadratic / ODE2: alpha=0.0008733261623828437, rho=0.4
-ODE2 & $0.4273\,x + 0.4510\,x^{2}$ & $-0.0202 + 0.5402\,x + 0.0825\,x^{2}$ & $0.0009$ & $0.4000$ \\[4pt]
+ODE2 & $0.42731\,x + 0.45097\,x^{2}$ & $-0.02019 + 0.54020\,x + 0.08250\,x^{2}$ & $0.00087$ & $0.40000$ \\[4pt]
 \addlinespace[5pt]
 \rowcolor{groupbg}
-\multicolumn{5}{l}{\strut\textbf{Ornstein--Uhlenbeck}} \\[2pt]
+\multicolumn{5}{l}{\strut\textbf{Ornstein--Uhlenbeck}\quad Exact: $\mu(x)=-0.50000\,x$;\quad $\sigma(x)=0.30000$} \\[2pt]
 % ou / Method 1: alpha=0.0008733261623828437, rho=0.4
-Method 1 & $-0.5003 + 0.0003\,x$ & $0.2990$ & $0.0009$ & $0.4000$ \\[4pt]
+Method 1 & $-0.50031 + 0.00031\,x$ & $0.29901$ & $0.00087$ & $0.40000$ \\[4pt]
 % ou / Method 2: alpha=0.0008733261623828437, rho=0.4
-Method 2 & $-0.5000$ & $0.2990$ & $0.0009$ & $0.4000$ \\[4pt]
+Method 2 & $-0.50000$ & $0.29901$ & $0.00087$ & $0.40000$ \\[4pt]
 % ou / ODE2: alpha=0.00017190722018585745, rho=0.4
-ODE2 & $-0.5000\,x$ & $0.2990$ & $0.0002$ & $0.4000$ \\[4pt]
+ODE2 & $-0.50000\,x$ & $0.29901$ & $0.00017$ & $0.40000$ \\[4pt]
 \bottomrule
 \end{tabular*}
 \par\vspace{9pt}
@@ -75,15 +75,17 @@ rule. All four experiments used 100,000 simulated samples.\par
 \vspace{4pt}
 \textbf{Selection.} The double-well outer search over polynomial degrees and
 regression types has been removed. The constant experiment uses its original
-$\rho$ grid: $0.7000,\,0.8500,\,0.9500,\,1.0000$.\par
+$\rho$ grid: $0.70000,\,0.85000,\,0.95000,\,1.00000$.\par
 \vspace{4pt}
-\textbf{Precision.} All displayed coefficients, $\alpha$, and $\rho$ are rounded
-to four decimal places. Terms that round to zero are omitted from the displayed
-polynomials. Full-precision coefficients and parameters remain in the result
-files; rounding does not change the fitted models.
-$\widehat{\sigma}$ is the diffusion amplitude, not its square.\par
+\textbf{Precision.} Final recovered coefficients are rounded in code to five
+decimal places after model selection and refitting. Predictions, plots, and
+errors use these rounded models. Unrounded coefficients are saved for comparison.
+$\alpha$ and $\rho$ are displayed to five decimal places; selection uses full
+precision. The exact functions define the simulated processes, and $\sigma$
+denotes diffusion amplitude, not variance.\par
 \vspace{4pt}
-\textbf{Source.} \texttt{outputs/<case>/ssisde\_comparison.json},
+\textbf{Source.} \texttt{outputs/<case>/ssisde\_comparison.json} and
+\texttt{model\_truth.json},
 where \texttt{<case>} is \texttt{black\_scholes}, \texttt{constant},
 \texttt{quadratic}, or \texttt{ou}.
 }

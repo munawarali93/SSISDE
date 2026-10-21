@@ -1,0 +1,12 @@
+{
+  "mu_coefficients": [
+    0.0,
+    0.7,
+    0.3
+  ],
+  "sigma_coefficients": [
+    0.0,
+    0.5,
+    0.1
+  ]
+}

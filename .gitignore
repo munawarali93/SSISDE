@@ -436,6 +436,7 @@ outputs/*
 outputs/*/*
 !outputs/*/ssisde_comparison.json
 !outputs/*/ssisde_comparison_paths.npz
+!outputs/*/model_truth.json
 !outputs/constant/diffusion_tuning.json
 !outputs/constant/results.json
 !outputs/quadratic/results.json

@@ -7,7 +7,9 @@ Then compile SSISDE_recovered_models.tex with pdflatex.
 
 import json
 from decimal import Decimal
+from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -22,19 +24,19 @@ METHODS = ("Method 1", "Method 2", "ODE2")
 
 
 def polynomial_tex(coefficients):
-    """Round full-precision coefficients once, omitting display-zero terms."""
+    """Format the final or exact polynomial with five decimal places."""
     terms = []
     for power, coefficient in enumerate(coefficients):
-        rounded = coefficient.quantize(Decimal("0.0001"))
+        rounded = coefficient.quantize(Decimal("0.00001"))
         if rounded == 0:
             continue
         negative = rounded < 0
-        body = f"{abs(rounded):.4f}"
+        body = f"{abs(rounded):.5f}"
         if power:
             body += r"\,x" + (rf"^{{{power}}}" if power > 1 else "")
         prefix = (" - " if negative else " + ") if terms else ("-" if negative else "")
         terms.append(prefix + body)
-    return "".join(terms) if terms else "0.0000"
+    return "".join(terms) if terms else "0.00000"
 
 
 def main():
@@ -42,21 +44,31 @@ def main():
     for case_index, (case, label) in enumerate(CASES):
         source = ROOT / "outputs" / case / "ssisde_comparison.json"
         results = json.loads(source.read_text(), parse_float=Decimal, parse_int=Decimal)
+        truth = json.loads(source.with_name("model_truth.json").read_text(),
+                           parse_float=Decimal, parse_int=Decimal)
         if set(results) != set(METHODS):
             raise ValueError(f"Unexpected methods in {source}")
         if case_index:
             rows.append(r"\addlinespace[5pt]")
         rows.append(r"\rowcolor{groupbg}")
-        rows.append(rf"\multicolumn{{5}}{{l}}{{\strut\textbf{{{label}}}}} \\[2pt]")
+        exact_mu = polynomial_tex(truth['mu_coefficients'])
+        exact_sigma = polynomial_tex(truth['sigma_coefficients'])
+        rows.append(rf"\multicolumn{{5}}{{l}}{{\strut\textbf{{{label}}}"
+                    rf"\quad Exact: $\mu(x)={exact_mu}$;\quad $\sigma(x)={exact_sigma}$}} \\[2pt]")
         for method in METHODS:
             fit = results[method]
+            if fit.get('coefficient_decimals') != 5:
+                raise ValueError(f"Rerun {case}: final model must use five-decimal coefficients.")
+            for field in ('mu_coefficients', 'sigma_coefficients'):
+                if any(c != c.quantize(Decimal('0.00001')) for c in fit[field]):
+                    raise ValueError(f"Unrounded final coefficients in {case}/{method}/{field}")
             rows.append(f"% {case} / {method}: alpha={fit['alpha']}, rho={fit['rho']}")
             fields = [
                 method,
                 f"${polynomial_tex(fit['mu_coefficients'])}$",
                 f"${polynomial_tex(fit['sigma_coefficients'])}$",
-                f"${fit['alpha']:.4f}$",
-                f"${fit['rho']:.4f}$",
+                f"${fit['alpha']:.5f}$",
+                f"${fit['rho']:.5f}$",
             ]
             rows.append(" & ".join(fields) + r" \\[4pt]")
     document = r"""\documentclass[10pt,a4paper,landscape]{article}
@@ -67,7 +79,7 @@ def main():
 \usepackage{booktabs,array}
 \usepackage[table]{xcolor}
 \usepackage{hyperref}
-\hypersetup{pdftitle={SSISDE: recovered drift and diffusion models},
+\hypersetup{pdftitle={SSISDE: exact and recovered drift and diffusion},
   pdfauthor={SSISDE},hidelinks}
 \definecolor{ink}{HTML}{16334A}
 \definecolor{groupbg}{HTML}{EDF2F6}
@@ -77,9 +89,9 @@ def main():
 \renewcommand{\arraystretch}{1.15}
 \pagestyle{empty}
 \begin{document}
-{\color{ink}\LARGE\bfseries Recovered drift and diffusion models}\par
+{\color{ink}\LARGE\bfseries Exact and recovered drift and diffusion}\par
 \vspace{3pt}
-{\color{muted}SSISDE experiment results \hfill 20 October 2026}\par
+{\color{muted}SSISDE experiment results \hfill REPORTDATE}\par
 \vspace{8pt}
 Final Stochastic SINDy fits using noise recovered from each drift method:
 \quad $dX_t=\widehat{\mu}(X_t)\,dt+\widehat{\sigma}(X_t)\,dW_t$.
@@ -104,21 +116,24 @@ rule. All four experiments used 100,000 simulated samples.\par
 \vspace{4pt}
 \textbf{Selection.} The double-well outer search over polynomial degrees and
 regression types has been removed. The constant experiment uses its original
-$\rho$ grid: $0.7000,\,0.8500,\,0.9500,\,1.0000$.\par
+$\rho$ grid: $0.70000,\,0.85000,\,0.95000,\,1.00000$.\par
 \vspace{4pt}
-\textbf{Precision.} All displayed coefficients, $\alpha$, and $\rho$ are rounded
-to four decimal places. Terms that round to zero are omitted from the displayed
-polynomials. Full-precision coefficients and parameters remain in the result
-files; rounding does not change the fitted models.
-$\widehat{\sigma}$ is the diffusion amplitude, not its square.\par
+\textbf{Precision.} Final recovered coefficients are rounded in code to five
+decimal places after model selection and refitting. Predictions, plots, and
+errors use these rounded models. Unrounded coefficients are saved for comparison.
+$\alpha$ and $\rho$ are displayed to five decimal places; selection uses full
+precision. The exact functions define the simulated processes, and $\sigma$
+denotes diffusion amplitude, not variance.\par
 \vspace{4pt}
-\textbf{Source.} \texttt{outputs/<case>/ssisde\_comparison.json},
+\textbf{Source.} \texttt{outputs/<case>/ssisde\_comparison.json} and
+\texttt{model\_truth.json},
 where \texttt{<case>} is \texttt{black\_scholes}, \texttt{constant},
 \texttt{quadratic}, or \texttt{ou}.
 }
 \end{document}
 """
-    DESTINATION.write_text(document)
+    report_date = datetime.now(ZoneInfo('America/New_York')).strftime('%d %B %Y')
+    DESTINATION.write_text(document.replace('REPORTDATE', report_date))
     print(f"Wrote {DESTINATION} (12 fitted models)")
 
 

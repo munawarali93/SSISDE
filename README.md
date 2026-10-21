@@ -60,10 +60,13 @@ done
   diffusion RMSE for all three methods.
 - **Recovered model tables:** [PDF](output/pdf/recovered_models/SSISDE_recovered_models.pdf)
   and [LaTeX source](output/pdf/recovered_models/SSISDE_recovered_models.tex)
-  list the fitted drift, diffusion, alpha, and rho for all 12 experiment/method
-  combinations, rounded to four decimal places. Full-precision coefficients and
-  parameters are retained in the JSON results; rounding only changes their
-  display. Regenerate the source with
+  list the exact drift and diffusion alongside fitted drift, diffusion, alpha,
+  and rho for all 12 experiment/method combinations, using five decimal places.
+  After selection and refitting, the final polynomial coefficients are rounded
+  in code; predictions, plots, and error metrics use those rounded models.
+  JSON results also retain unrounded coefficients for comparison. Alpha and rho
+  are rounded for display only; selection keeps full precision. Exact functions
+  are recorded in `outputs/<case>/model_truth.json`. Regenerate the source with
   `python output/pdf/recovered_models/build_tables.py`, then compile it with
   `pdflatex`.
 
@@ -96,9 +99,10 @@ for function inputs and outputs.
 python scripts/verify_preservation.py
 ```
 
-This checks numerical preservation against Git commit `d8152df` and tests ODE2
-against known solutions. The checkout must include that commit's history.
-All four experiments passed a full local rerun on **2026-10-20**, using 100,000
+This checks numerical preservation before final rounding against Git commit
+`d8152df`, verifies predictions and errors from the rounded coefficients, and
+tests ODE2 against known solutions. The checkout must include that commit's history.
+All four experiments passed a full local rerun on **2026-10-21**, using 100,000
 samples and cross-validation. The 49 saved figures come from those runs; 12
 obsolete figures from earlier workflows and four redundant standalone Euler/ODE2
 drift figures were removed.

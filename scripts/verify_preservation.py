@@ -177,10 +177,25 @@ def check_regression():
                         alphas=np.geomspace(1e-5, 1e-2, 4), rhos=[0.5, 1.0])
         before = old['StochSINDy'](**settings).fit(X, W, dt)
         after = StochSINDy(**settings).fit(X, W, dt)
-        equal(after.mu_c, before.mu_c)
-        equal(after.si_c, before.si_c)
-        equal(after.mse, before.mse)
-    print('PASS: diffusion fitting and all three SSISDE penalties match exactly.', flush=True)
+        equal(after.mu_c_unrounded, before.mu_c)
+        equal(after.si_c_unrounded, before.si_c)
+        equal(after.mse_unrounded, before.mse)
+        assert after.best_a == before.best_a and after.best_r == before.best_r
+        equal(after.mu_c, np.round(before.mu_c, 5))
+        equal(after.si_c, np.round(before.si_c, 5))
+        for predict, coefficients in [(after.mu, before.mu_c), (after.si, before.si_c)]:
+            rounded = np.round(coefficients, 5)
+            expected = np.polynomial.polynomial.polyval(X, rounded)
+            # Horner evaluation and the power-basis matrix product have different
+            # roundoff, amplified when large polynomial terms cancel.
+            magnitude = np.polynomial.polynomial.polyval(np.abs(X), np.abs(rounded))
+            tolerance = 4 * len(rounded) * np.finfo(float).eps * magnitude
+            assert np.all(np.abs(predict(X) - expected) <= tolerance)
+        prediction = after.mu(X[:-1])*dt + after.si(X[:-1])*np.diff(W)
+        np.testing.assert_allclose(after.mse, np.mean((np.diff(X)-prediction)**2),
+                                   rtol=1e-12, atol=1e-20)
+    print('PASS: diffusion and unrounded SSISDE fits match exactly; selection is unchanged; '
+          'predictions and MSE use final five-decimal coefficients.', flush=True)
 
 
 def check_modules():

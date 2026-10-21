@@ -30,8 +30,12 @@ class StochSINDy:
         # learned stuff
         self.mu_c = None       # μ coeffs
         self.si_c = None       # σ coeffs
+        self.mu_c_unrounded = None
+        self.si_c_unrounded = None
+        self.coefficient_decimals = 5
         self.dt = None
         self.mse = None
+        self.mse_unrounded = None
 
         # keep scales
         self._s_mu = None
@@ -85,7 +89,7 @@ class StochSINDy:
         beta = np.zeros(Z.shape[1]); beta[mask] = beta_a
         return beta
 
-    def _fmt_poly(self, c, bias=True, tol=5e-12, decimals=None):
+    def _fmt_poly(self, c, bias=True, tol=5e-12, decimals=5):
         """Readable polynomial; optional decimal rounding affects display only."""
         terms = []
         start = 0 if bias else 1
@@ -233,7 +237,18 @@ class StochSINDy:
             self._s_mu, self._s_si = smu, ssi
             self._g_mu, self._g_si = gmu, gsi
 
-        # fit quality
+        # Round only the final coefficients, after selection, refitting and
+        # conversion back to physical units. Keep the original fit for audit.
+        self.mu_c_unrounded = self.mu_c.copy()
+        self.si_c_unrounded = self.si_c.copy()
+        unrounded_dX_hat = (Th_mu @ self.mu_c) * self.dt + (Th_si @ self.si_c) * dBP
+        self.mse_unrounded = float(np.mean((dX - unrounded_dX_hat)**2))
+        self.mu_c = np.round(self.mu_c_unrounded, self.coefficient_decimals)
+        self.si_c = np.round(self.si_c_unrounded, self.coefficient_decimals)
+        self.mu_c[self.mu_c == 0] = 0.0
+        self.si_c[self.si_c == 0] = 0.0
+
+        # Predictions, plots and fit quality all use the rounded final model.
         dX_hat = (Th_mu @ self.mu_c) * self.dt + (Th_si @ self.si_c) * dBP
         self.mse = float(np.mean((dX - dX_hat)**2))
         return self
@@ -243,7 +258,7 @@ class StochSINDy:
     def si(self, x):  return self._poly(x, self.si_deg, True) @ self.si_c
 
     # ----------------- prints -----------------
-    def show(self, decimals=4):
+    def show(self, decimals=5):
         print(f"MSE: {self.mse:.{decimals}f}")
         print(f"μ(X) = {self._fmt_poly(self.mu_c, decimals=decimals)}")
         print(f"σ(X) = {self._fmt_poly(self.si_c, decimals=decimals)}")
@@ -262,7 +277,7 @@ class StochSINDy:
             plt.figure(figsize=(6,4))
             plt.semilogx(A, M, lw=2)
             plt.fill_between(A, M-S, M+S, alpha=0.2, label="±1 SE")
-            plt.axvline(a_sel, ls="--", c="crimson", lw=1.5, label=f"α*={a_sel:.3g}")
+            plt.axvline(a_sel, ls="--", c="crimson", lw=1.5, label=f"α*={a_sel:.5f}")
             plt.xlabel("alpha"); plt.ylabel("CV MSE"); plt.title("Lasso CV"); plt.grid(True); plt.legend()
             plt.tight_layout(); plt.show()
         else:
