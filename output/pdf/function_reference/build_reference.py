@@ -100,8 +100,8 @@ story.append(p("<b>fit(X, BP, dt, alpha_mu, alpha_si)</b> returns the fitted mod
                "<b>plot_cv(output_prefix)</b>, <b>plot_size(count_bias, output_prefix)</b> and "
                "<b>plot_results(X, BP, BQ, W, mu_true, si_true, output_prefix, drift_title)</b> display diagnostics "
                "and save plots where implemented."))
-story.append(p("The double-well outer search over model configurations has been removed. "
-               "StochSINDy retains its original within-model cross-validation for alpha and rho. "
+story.append(p("The current experiments use degree-five drift and diffusion libraries with "
+               "seven-fold time-series cross-validation for alpha and rho. "
                "After selection and refitting, <b>fit()</b> rounds final coefficients to five decimal places. "
                "Predictions, plots, and errors use those rounded coefficients. "
                "<b>mu_c_unrounded</b>, <b>si_c_unrounded</b>, and <b>mse_unrounded</b> preserve the original fit. "

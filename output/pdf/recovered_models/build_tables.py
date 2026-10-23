@@ -23,6 +23,16 @@ CASES = [
 METHODS = ("Method 1", "Method 2", "ODE2")
 
 
+def mse_tex(value):
+    """Keep small final errors visible with six significant figures."""
+    if not value.is_finite() or value < 0:
+        raise ValueError(f"Invalid final MSE: {value}")
+    if value == 0:
+        return "0"
+    mantissa, exponent = f"{value:.5E}".split("E")
+    return rf"{mantissa}\times 10^{{{int(exponent)}}}"
+
+
 def polynomial_tex(coefficients):
     """Format the final or exact polynomial with five decimal places."""
     terms = []
@@ -53,7 +63,7 @@ def main():
         rows.append(r"\rowcolor{groupbg}")
         exact_mu = polynomial_tex(truth['mu_coefficients'])
         exact_sigma = polynomial_tex(truth['sigma_coefficients'])
-        rows.append(rf"\multicolumn{{5}}{{l}}{{\strut\textbf{{{label}}}"
+        rows.append(rf"\multicolumn{{6}}{{l}}{{\strut\textbf{{{label}}}"
                     rf"\quad Exact: $\mu(x)={exact_mu}$;\quad $\sigma(x)={exact_sigma}$}} \\[2pt]")
         for method in METHODS:
             fit = results[method]
@@ -69,6 +79,7 @@ def main():
                 f"${polynomial_tex(fit['sigma_coefficients'])}$",
                 f"${fit['alpha']:.5f}$",
                 f"${fit['rho']:.5f}$",
+                f"${mse_tex(fit['increment_mse'])}$",
             ]
             rows.append(" & ".join(fields) + r" \\[4pt]")
     document = r"""\documentclass[10pt,a4paper,landscape]{article}
@@ -85,7 +96,7 @@ def main():
 \definecolor{groupbg}{HTML}{EDF2F6}
 \definecolor{muted}{HTML}{465565}
 \setlength{\parindent}{0pt}
-\setlength{\tabcolsep}{7pt}
+\setlength{\tabcolsep}{5pt}
 \renewcommand{\arraystretch}{1.15}
 \pagestyle{empty}
 \begin{document}
@@ -96,11 +107,11 @@ def main():
 Final Stochastic SINDy fits using noise recovered from each drift method:
 \quad $dX_t=\widehat{\mu}(X_t)\,dt+\widehat{\sigma}(X_t)\,dW_t$.
 \par\vspace{8pt}
-\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} l l l c c @{}}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} l l l c c r @{}}
 \toprule
 \textbf{Method} & \textbf{Recovered drift $\widehat{\mu}(x)$}
 & \textbf{Recovered diffusion $\widehat{\sigma}(x)$}
-& \textbf{$\alpha$} & \textbf{$\rho$} \\
+& \textbf{$\alpha$} & \textbf{$\rho$} & \textbf{Final MSE} \\
 \midrule
 """
     document += "\n".join(rows)
@@ -109,13 +120,20 @@ Final Stochastic SINDy fits using noise recovered from each drift method:
 \end{tabular*}
 \par\vspace{9pt}
 {\small
+\textbf{Final MSE.} Mean squared increment prediction error on the fitted data:
+$\frac{1}{N}\sum_{i=0}^{N-1}[\Delta X_i-\widehat{\mu}(X_i)\Delta t
+-\widehat{\sigma}(X_i)\Delta\widehat{W}_i]^2$, using each method's recovered
+noise and the final rounded coefficients. Values are the saved
+\texttt{increment\_mse}, shown to six significant figures; these are not
+cross-validation errors.\par
+\vspace{4pt}
 \textbf{Parameters.} $\alpha$ is the ElasticNet regularization strength;
 $\rho$ is its L1 mixing ratio. Each pair applies to the joint drift--diffusion
 fit and was selected by seven-fold cross-validation with the one-standard-error
 rule. All four experiments used 100,000 simulated samples.\par
 \vspace{4pt}
-\textbf{Selection.} The double-well outer search over polynomial degrees and
-regression types has been removed. The constant experiment uses its original
+\textbf{Selection.} Both polynomial libraries contain powers zero through five.
+The constant experiment uses the
 $\rho$ grid: $0.70000,\,0.85000,\,0.95000,\,1.00000$.\par
 \vspace{4pt}
 \textbf{Precision.} Final recovered coefficients are rounded in code to five
